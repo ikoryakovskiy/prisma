@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from finance.interfaces.interface import (
+from prisma.interfaces.interface import (
     RapidApiStatisticsInterface,
     RapidApiHistoryInterface,
     YahooFinanceHistoryInterface,
