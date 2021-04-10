@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from utils import convert_to_codes, find_name
+from prisma.utils import convert_countries_to_codes, find_name
 
 
 class TextBasedRule:
@@ -46,7 +46,7 @@ class TextBasedRule:
         for name in instrument_names:
             score = self.evaluate(instruments[name])
             scores.append(score)
-        #return pd.Series(dict(zip(instrument_names, scores)), name=self.name)
+        # return pd.Series(dict(zip(instrument_names, scores)), name=self.name)
         return pd.Series(scores, name=self.name, index=instrument_names.index)
 
     def __call__(self, table, instruments):
@@ -79,7 +79,7 @@ class PePsRule:
         new_column.name = self.name
         new_column[(pe < 20) & (ps < 2)] = 0.5
         only_one = ((pe >= 20) & (ps < 2)) | ((pe < 20) & (ps >= 2))
-        new_column[only_one]  = 0.25
+        new_column[only_one] = 0.25
         new_column[(pe >= 20) & (ps >= 2)] = 0.0
         return new_column
 
@@ -97,9 +97,9 @@ class TerRule:
     def process(self, column):
         new_column = column.copy()
         new_column.name = self.name
-        new_column[column < 0.2]  = 0.2
+        new_column[column < 0.2] = 0.2
         new_column[(column >= 0.2) & (column < 0.5)] = 0.1
-        new_column[column >= 0.5]  = 0.0
+        new_column[column >= 0.5] = 0.0
         return new_column
 
     def __call__(self, table, instruments):
@@ -113,7 +113,7 @@ class DeclineRule:
         self.name = "DeclineScore"
 
     def process(self, m1, m3, y5):
-        new_column = pd.DataFrame([0]*len(m1), columns=[self.name], index=m1.index)
+        new_column = pd.DataFrame([0] * len(m1), columns=[self.name], index=m1.index)
 
         y5_per_month = y5.copy() / 12
         m3_per_month = m3.copy() / 3
@@ -122,8 +122,8 @@ class DeclineRule:
         m1_m3_below_y5 = (y5_per_month > m3_per_month) | (y5_per_month > m1)
         m1_m3_neg = (m1 < 0) & (m3 < 0)
 
-        m1_pos_little_m3_neg  = (m1 > 0) & (m3 < 0) & (m1 + m3 < 5)
-        m1_pos_much_m3_neg  = (m1 > 0) & (m3 < 0) & (m1 + m3 >= 5)
+        m1_pos_little_m3_neg = (m1 > 0) & (m3 < 0) & (m1 + m3 < 5)
+        m1_pos_much_m3_neg = (m1 > 0) & (m3 < 0) & (m1 + m3 >= 5)
 
         # temporary decline is a good signal for buying
         new_column[m1_m3_neg & m1_m3_below_y5 & long_term_grouth] = 0.25
@@ -161,13 +161,3 @@ class StgRule(LtgRule):
         name_1y = find_name(table, "1y")
         new_column = self.process(table[name_1y])
         table[self.name] = new_column
-
-
-
-
-
-
-
-
-
-

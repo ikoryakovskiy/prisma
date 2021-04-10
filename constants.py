@@ -1,17 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr  3 22:26:15 2021
-
-@author: ivan
-"""
 import os
 
-CACHE_DIR  = os.path.join("interface", "cache")
-WALLET_FILE = os.path.join("interface", "wallet.json")
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = "data"
+CACHE_DIR = os.path.join(PROJECT_DIR, DATA_DIR, "cache")
+WALLET_FILE = os.path.join(PROJECT_DIR, DATA_DIR, "wallet.json")
 
 
-SECTORS_MAP = {
+RAPIDAPI_SECTORS_MAP = {
     "realestate": "R",
     "consumer_cyclical": "CD",
     "basic_materials": "M",
@@ -25,11 +20,12 @@ SECTORS_MAP = {
     "healthcare": "H",
 }
 
-MAX_SECTORS = 3
+SECTORS_COUNTRIES_DISPLAY_NUM = 3  # In counts
+SECTORS_COUNTRIES_MIN_WEIGHT = 0.05  # In %
 
 # Standard deviation for filtering at specific time back (in days)
 WINDOW_MULTIPLIER = 3
 STD_DAYS_5Y = 60  # 12 month window
 STD_DAYS_1Y = 12  # 2.4 month window
-STD_DAYS_3M = 3   # 18 days window
-STD_DAYS_1M = 1   # 6 days window
+STD_DAYS_3M = 3  # 18 days window
+STD_DAYS_1M = 1  # 6 days window

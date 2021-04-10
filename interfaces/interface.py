@@ -4,30 +4,30 @@ import json
 from functools import partial
 from yahoofinance import HistoricalPrices
 from urllib.request import urlopen
+import pandas as pd
+from collections import OrderedDict
 
 from prisma.interfaces.cache import Cache
 from prisma.interfaces.wallet import Wallet
+from prisma.utils import convert_countries_to_codes, percent_to_float
+from prisma.constants import WALLET_FILE, RAPIDAPI_SECTORS_MAP
 
 
 class Interface:
     def __init__(self):
         super().__init__()
-        self.wallet = Wallet("wallet.json")
+        self.wallet = Wallet(WALLET_FILE)
         self.cache = Cache()
-
-    def request_or_read_cache(self, query, filename, request_fn):
-        if os.path.isfile(filename):
-            return self.cache.load_cahced_responce(filename)
-        else:
-            data = request_fn(query)
-            self.cache.cache_responce(data, filename)
-            return data
 
     def get_responce(self, name, symbol, region, request_fn):
         query = {"symbol": symbol, "region": region}
-        filename = self.cache.get_filename(query, name)
-        request_fn = request_fn or request_fn
-        return self.request_or_read_cache(query, filename, request_fn)
+        cache_filename = self.cache.get_filename(query, name)
+        if os.path.isfile(cache_filename):
+            return self.cache.load_cahced_responce(cache_filename)
+        else:
+            data = request_fn(query)
+            self.cache.cache_responce(data, cache_filename)
+            return data
 
 
 class RapidApiInterface(Interface):
@@ -54,7 +54,7 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         responce = self.get_responce(self.name, symbol, region, self.request_fn)
 
         # Single-number statistics
-        stat = {}
+        stat = OrderedDict()
         stat["Name"] = responce["quoteType"]["shortName"]
         stat["P/E"] = responce["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"]
         stat["P/S"] = responce["topHoldings"]["equityHoldings"]["priceToSales"]["raw"]
@@ -67,7 +67,8 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         for holding_info in responce["topHoldings"]["sectorWeightings"]:
             for sector in holding_info:
                 sectors[sector] = holding_info[sector]["raw"]
-
+        sectors = pd.DataFrame.from_dict(sectors, orient="index", columns=["weight"])
+        sectors = sectors.rename(index=RAPIDAPI_SECTORS_MAP)
         return stat, sectors
 
 
@@ -94,7 +95,7 @@ class YahooFinanceHistoryInterface(Interface):
 
     def send_request(self, symbol, region, start_date, end_date):
         request_fn = partial(self.request, start_date, end_date)
-        return super().get_responce(self.name, symbol, region, request_fn=request_fn)
+        return self.get_responce(self.name, symbol, region, request_fn=request_fn)
 
     def pull(self, symbol, region, start_date, end_date):
         responce = self.send_request(symbol, "US", start_date, end_date)
@@ -118,4 +119,10 @@ class FmpCountryInterface(Interface):
 
     def pull(self, symbol, region):
         responce = self.get_responce(self.name, symbol, region, request_fn=self.request)
-        return responce
+        countries = {}
+        for item in responce:
+            name = item["country"]
+            weight = percent_to_float(item["weightPercentage"])
+            countries[name] = weight
+        countries = convert_countries_to_codes(countries)
+        return pd.DataFrame.from_dict(countries, orient="index", columns=["weight"])

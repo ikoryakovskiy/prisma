@@ -1,4 +1,4 @@
-from prisma.utils.filters import Gaussian
-from prisma.utils.utils import convert_to_codes, find_name
+from prisma.utils.filters import ConvDateSeries
+from prisma.utils.utils import convert_countries_to_codes, find_name, percent_to_float
 
-__all__ = ["Gaussian", "convert_to_codes", "find_name"]
+__all__ = ["ConvDateSeries", "convert_countries_to_codes", "find_name", "percent_to_float"]

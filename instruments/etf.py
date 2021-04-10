@@ -9,15 +9,15 @@ from prisma.interfaces import (
 )
 from prisma.wrappers import ToMillions, Percent
 from constants import (
-    SECTORS_MAP,
-    MAX_SECTORS,
+    SECTORS_COUNTRIES_DISPLAY_NUM,
+    SECTORS_COUNTRIES_MIN_WEIGHT,
     STD_DAYS_1M,
     STD_DAYS_3M,
     STD_DAYS_1Y,
     STD_DAYS_5Y,
     WINDOW_MULTIPLIER,
 )
-from prisma.utils import Gaussian, convert_to_codes
+from prisma.utils import ConvDateSeries, convert_countries_to_codes
 
 
 class DataProcessor:
@@ -27,11 +27,48 @@ class DataProcessor:
         start_date = end_date - relativedelta(years=5) - relativedelta(days=half_window)
         return start_date, end_date
 
-    def append(self, where, what):
-        pass
+    def append(self, lhs, rhs):
+        if rhs:
+            for name, weight in rhs.items():
+                if name in lhs:
+                    lhs[name] = max(lhs[name], weight)
+                else:
+                    lhs[name] = weight
 
-    def convert_to_area_codes(self, countries):
-        pass
+    def find_top(self, x, nlargest=SECTORS_COUNTRIES_DISPLAY_NUM, min_weight=SECTORS_COUNTRIES_MIN_WEIGHT):
+        largest = x.nlargest(nlargest, "weight")
+        largest = largest[largest.weight > min_weight]
+
+        top_selection = []
+        if len(largest) == 1:
+            top_selection.append(largest.index[0])
+        else:
+            for name, weight in largest.itertuples():
+                str_weight = f"{weight:.1f}".strip("0")
+                top_selection.append(f"{name}{str_weight}")
+        return " ".join(top_selection)
+
+    def filter_price(self, price):
+        back_5y = date.today() - relativedelta(years=5)
+        back_1y = date.today() - relativedelta(years=1)
+        back_3m = date.today() - relativedelta(month=3)
+        back_1m = date.today() - relativedelta(month=1)
+        today = date.today()
+
+        dates = [back_1m, back_3m, back_1y, back_5y]
+        stds = [STD_DAYS_1M, STD_DAYS_3M, STD_DAYS_1Y, STD_DAYS_5Y]
+        names = ["1M", "3M", "1Y", "5Y"]
+        months = [1, 3, 12, 60]
+        price_change = {}
+        for m, day, std, name in zip(months, dates, stds, names):
+            price_filter = ConvDateSeries()
+            price_old = price_filter(price, day, std)
+            price_today = price_filter(price, today, std)
+            change = (price_today - price_old) / price_old
+            if m > 12:
+                change *= 12 / m
+            price_change[name] = change
+        return price_change
 
 
 class ETF(DataProcessor):
@@ -51,77 +88,10 @@ class ETF(DataProcessor):
 
         # append user-defined knowledge
         self.append(self.sectors, industries)
-        self.convert_to_area_codes(self.countries)
-        self.convert_to_area_codes(countries)
-        self.append(self.countries, countries)
+        self.append(self.countries, convert_countries_to_codes(countries))
 
-        self.process_statistics(stat, symbol, top_countries, industries)
+        self.stat["Sectors"] = self.find_top(self.sectors)
+        self.stat["Countries"] = self.find_top(self.countries)
 
-        hist = self.ihistory.get(symbol, start_date, end_date)
-
-        self.process_history(hist, symbol)
-
-    def process_statistics(self, stat, symbol, top_countries, industries):
-        pass
-
-    def get_sectors(self, stat, industries):
-        sectors = {}
-        for holding_info in stat["topHoldings"]["sectorWeightings"]:
-            for sector in holding_info:
-                sectors[sector] = holding_info[sector]["raw"]
-        sectors = pd.DataFrame.from_dict(sectors, orient="index", columns=["weight"])
-        sectors = sectors.rename(index=SECTORS_MAP)
-        top_sectors = sectors.nlargest(MAX_SECTORS, "weight")
-        top_sectors = top_sectors[top_sectors.weight > 0.05]
-
-        top_sectors_encoded = industries.copy()
-        if len(top_sectors) == 1:
-            top_sectors_encoded.append(top_sectors.index[0])
-        else:
-            for sector, row in top_sectors.iterrows():
-                weight = row["weight"]
-                weight = f"{weight:.1f}".strip("0")
-                top_sectors_encoded.append(f"{sector}{weight}")
-
-        return sectors, " ".join(top_sectors_encoded[:MAX_SECTORS])
-
-    def daterange(self, start_date, end_date):
-        for n in range(int((end_date - start_date).days)):
-            yield start_date + relativedelta(days=n)
-
-    def gaussian_filter(self, price, mean, std):
-        half_window = WINDOW_MULTIPLIER * std
-        start_date = mean - relativedelta(days=half_window)
-        end_date = mean + relativedelta(days=half_window)
-
-        x = -half_window
-        g = Gaussian(mean=0, std=std)
-        norm = 0
-        filtered_price = 0
-        for day in self.daterange(start_date, end_date):
-            x += 1
-            if str(day) in price.index:
-                p = price[str(day)]
-                c = g(x)
-                filtered_price += p * c
-                norm += c
-        return filtered_price / norm
-
-    def process_history(self, close_price):
-        back_5y = date.today() - relativedelta(years=5)
-        back_1y = date.today() - relativedelta(years=1)
-        back_3m = date.today() - relativedelta(month=3)
-        back_1m = date.today() - relativedelta(month=1)
-        today = date.today()
-
-        dates = [back_1m, back_3m, back_1y, back_5y]
-        stds = [STD_DAYS_1M, STD_DAYS_3M, STD_DAYS_1Y, STD_DAYS_5Y]
-        names = ["1M, %", "3M, %", "1Y, %", "5Y, %"]
-        months = [1, 3, 12, 60]
-        for m, day, std, name in zip(months, dates, stds, names):
-            price_old = self.gaussian_filter(close_price, day, std)
-            price_today = self.gaussian_filter(close_price, today, std)
-            change = (price_today - price_old) / price_old
-            if m > 12:
-                change *= 12 / m
-            self.data[name] = Percent(change, decimal_digits=1)
+        price_change = self.filter_price(self.price)
+        self.stat.update(price_change)
