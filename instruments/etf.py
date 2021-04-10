@@ -20,53 +20,49 @@ from constants import (
 from prisma.utils import Gaussian, convert_to_codes
 
 
-class ETF:
-    def __init__(self, symbol, top_countries=None, industries=None):
-        super().__init__()
-        self.symbol = symbol
-
-        self.istat = RapidApiStatisticsInterface()
-        self.ihistory = YahooFinanceHistoryInterface()
-        self.icountries = FmpCountryInterface()
-
-        stat = self.istat.get(symbol)
-
-        self.process_statistics(stat, symbol, top_countries, industries)
-
+class DataProcessor:
+    def get_history_span(self):
         end_date = date.today()
         half_window = WINDOW_MULTIPLIER * STD_DAYS_5Y
         start_date = end_date - relativedelta(years=5) - relativedelta(days=half_window)
+        return start_date, end_date
+
+    def append(self, where, what):
+        pass
+
+    def convert_to_area_codes(self, countries):
+        pass
+
+
+class ETF(DataProcessor):
+    def __init__(self, symbol, countries=None, industries=None):
+        super().__init__()
+        self.symbol = symbol
+
+        istat = RapidApiStatisticsInterface()
+        self.stat, self.sectors = istat.pull(self.symbol, "US")
+
+        ihistory = YahooFinanceHistoryInterface()
+        start_date, end_date = self.get_history_span()
+        self.price = ihistory.pull(self.symbol, "US", start_date, end_date)
+
+        icountries = FmpCountryInterface()
+        self.countries = icountries.pull(self.symbol, "US")
+
+        # append user-defined knowledge
+        self.append(self.sectors, industries)
+        self.convert_to_area_codes(self.countries)
+        self.convert_to_area_codes(countries)
+        self.append(self.countries, countries)
+
+        self.process_statistics(stat, symbol, top_countries, industries)
+
         hist = self.ihistory.get(symbol, start_date, end_date)
 
         self.process_history(hist, symbol)
 
     def process_statistics(self, stat, symbol, top_countries, industries):
-        holdings = stat["topHoldings"]["equityHoldings"]
-        key_statistics = stat["defaultKeyStatistics"]
-        profile = stat["fundProfile"]
-
-        self.data["Name"] = stat["quoteType"]["shortName"]
-        self.data["P/E"] = holdings["priceToEarnings"]["raw"]
-        self.data["P/S"] = holdings["priceToSales"]["raw"]
-        self.data["Yield, %"] = Percent(
-            key_statistics["yield"]["raw"], decimal_digits=1
-        )
-        self.data["Volume"] = ToMillions(
-            stat["price"]["averageDailyVolume3Month"]["raw"]
-        )
-        self.data["TER, %"] = Percent(
-            profile["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"],
-            decimal_digits=2,
-        )
-
-        industries = industries or []
-        sectors, self.data["Top sectors"] = self.get_sectors(stat, industries)
-
-        self.industries = industries
-        self.sectors = sectors.to_dict()["weight"]
-
-        self.country_codes = convert_to_codes(top_countries)
-        self.data["Top countries"] = " ".join(self.country_codes[:MAX_SECTORS])
+        pass
 
     def get_sectors(self, stat, industries):
         sectors = {}
@@ -111,9 +107,7 @@ class ETF:
                 norm += c
         return filtered_price / norm
 
-    def process_history(self, hist, symbol):
-        close_price = hist["Historical Prices"]["Close"]
-
+    def process_history(self, close_price):
         back_5y = date.today() - relativedelta(years=5)
         back_1y = date.today() - relativedelta(years=1)
         back_3m = date.today() - relativedelta(month=3)
