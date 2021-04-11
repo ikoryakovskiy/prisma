@@ -1,6 +1,7 @@
 import pandas as pd
+from tabulate import tabulate
 
-from prisma.instruments import ETF
+from prisma.assets import ETF
 from prisma.utils import find_name
 from prisma.rules import (
     Screener,
@@ -14,21 +15,27 @@ from prisma.rules import (
 )
 
 
-def convert_to_table(instruments):
-    data = []
-    for instument in instruments:
-        row = []
-        for item, value in instument:
-            row.append(inst.data[name])
-        data.append(row)
-    return pd.DataFrame(data, columns=columns)
+class Portfolio:
+    def __init__(self, assets):
+        self.format_and_store(assets)
 
+    def format_and_store(self, assets):
+        self.countries = {}
+        self.sectors = {}
+        stat_data = []
+        for asset in assets:
+            stat_data.append(asset.stat)
+            self.countries[asset.symbol] = asset.countries
+            self.sectors[asset.symbol] = asset.sectors
+        self.stat = pd.DataFrame(stat_data)
 
-def convert_to_dict(instruments):
-    instr = {}
-    for instrument in instruments:
-        instr[instrument.symbol] = instrument
-    return instr
+    def display(self, by=None):
+        if by:
+            stat = self.stat.sort_values(by=by).reset_index(drop=True)
+        else:
+            stat = self.stat
+        table = tabulate(stat, headers="keys", tablefmt="psql")
+        print(table)
 
 
 # Useful information
@@ -38,7 +45,7 @@ def convert_to_dict(instruments):
 # https://financialmodelingprep.com/developer/docs/dashboard
 # https://finnhub.io/docs/api/etfs-country-exposure
 # https://etf-data.com/
-instruments = [
+assets = [
     ETF("IVV"),
     # ETF("LIT", top_countries=["china", "us", "kr"], industries=["EV"]),
     # ETF("SOXX", top_countries=["us"], industries=["Semi"]),
@@ -64,8 +71,8 @@ instruments = [
     # ETF("CQQQ", top_countries=["china"]),
 ]
 
-table = convert_to_table(instruments)
-print(table.sort_values(by="Symbol").to_string(index=False))
+portfolio = Portfolio(assets)
+portfolio.display(by="Symbol")
 
 # instruments = convert_to_dict(instruments)
 

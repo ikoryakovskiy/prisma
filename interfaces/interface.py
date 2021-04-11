@@ -55,6 +55,7 @@ class RapidApiStatisticsInterface(RapidApiInterface):
 
         # Single-number statistics
         stat = OrderedDict()
+        stat["Symbol"] = symbol
         stat["Name"] = responce["quoteType"]["shortName"]
         stat["P/E"] = responce["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"]
         stat["P/S"] = responce["topHoldings"]["equityHoldings"]["priceToSales"]["raw"]

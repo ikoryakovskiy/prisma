@@ -20,6 +20,10 @@ RAPIDAPI_SECTORS_MAP = {
     "healthcare": "H",
 }
 
+HEADER_FORMAT = {
+    "Symbol": 1,
+}
+
 SECTORS_COUNTRIES_DISPLAY_NUM = 3  # In counts
 SECTORS_COUNTRIES_MIN_WEIGHT = 0.05  # In %
 
