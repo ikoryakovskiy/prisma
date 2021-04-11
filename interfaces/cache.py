@@ -21,11 +21,11 @@ class Cache:
         filename = os.path.join(CACHE_DIR, full_name)
         return filename
 
-    def cache_responce(self, data, filename):
+    def cache_response(self, data, filename):
         with open(filename, "wb") as file:
             pickle.dump(data, file)
 
-    def load_cahced_responce(self, filename):
+    def load_cahced_response(self, filename):
         with open(filename, "rb") as file:
             return pickle.load(file)
 

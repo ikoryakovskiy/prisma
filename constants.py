@@ -60,7 +60,7 @@ HEADER_FORMAT = {
 }
 
 SECTORS_COUNTRIES_DISPLAY_NUM = 3  # In counts
-SECTORS_COUNTRIES_MIN_WEIGHT = 0.05  # In %
+SECTORS_COUNTRIES_MIN_WEIGHT = 0.1  # In %
 
 # Standard deviation for filtering at specific time back (in days)
 WINDOW_MULTIPLIER = 3

@@ -20,7 +20,7 @@ from constants import (
 from prisma.utils import ConvDateSeries, convert_countries_to_codes
 
 
-class DataProcessor:
+class Asset:
     def get_history_span(self):
         end_date = date.today()
         half_window = WINDOW_MULTIPLIER * STD_DAYS_5Y
@@ -37,7 +37,7 @@ class DataProcessor:
 
     def find_top(self, x, nlargest=SECTORS_COUNTRIES_DISPLAY_NUM, min_weight=SECTORS_COUNTRIES_MIN_WEIGHT):
         largest = pd.DataFrame.from_dict(x, orient="index", columns=["weight"]).nlargest(nlargest, "weight")
-        largest = largest[largest.weight > min_weight]
+        largest = largest[largest.weight >= min_weight]
 
         top_selection = []
         for name, weight in largest.itertuples():
@@ -70,7 +70,7 @@ class DataProcessor:
         return price_change
 
 
-class ETF(DataProcessor):
+class ETF(Asset):
     def __init__(self, symbol, countries=None, industries=None):
         super().__init__()
         self.symbol = symbol

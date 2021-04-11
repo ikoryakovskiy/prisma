@@ -19,14 +19,14 @@ class Interface:
         self.wallet = Wallet(WALLET_FILE)
         self.cache = Cache()
 
-    def get_responce(self, name, symbol, region, request_fn):
+    def get_response(self, name, symbol, region, request_fn):
         query = {"symbol": symbol, "region": region}
         cache_filename = self.cache.get_filename(query, name)
         if os.path.isfile(cache_filename):
-            return self.cache.load_cahced_responce(cache_filename)
+            return self.cache.load_cahced_response(cache_filename)
         else:
             data = request_fn(query)
-            self.cache.cache_responce(data, cache_filename)
+            self.cache.cache_response(data, cache_filename)
             return data
 
 
@@ -51,21 +51,21 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         self.request_fn = partial(self.request, url)
 
     def pull(self, symbol, region):
-        responce = self.get_responce(self.name, symbol, region, self.request_fn)
+        response = self.get_response(self.name, symbol, region, self.request_fn)
 
         # Single-number statistics
         stat = OrderedDict()
         stat["Symbol"] = symbol
-        stat["Name"] = responce["quoteType"]["shortName"]
-        stat["P/E"] = responce["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"]
-        stat["P/S"] = responce["topHoldings"]["equityHoldings"]["priceToSales"]["raw"]
-        stat["Yield"] = responce["defaultKeyStatistics"]["yield"]["raw"]
-        stat["Volume"] = responce["price"]["averageDailyVolume3Month"]["raw"]
-        stat["TER"] = responce["fundProfile"]["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"]
+        stat["Name"] = response["quoteType"]["shortName"]
+        stat["P/E"] = response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"]
+        stat["P/S"] = response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"]
+        stat["Yield"] = response["defaultKeyStatistics"]["yield"]["raw"]
+        stat["Volume"] = response["price"]["averageDailyVolume3Month"]["raw"]
+        stat["TER"] = response["fundProfile"]["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"]
 
         # Sectors and percentages
         sectors = {}
-        for holding_info in responce["topHoldings"]["sectorWeightings"]:
+        for holding_info in response["topHoldings"]["sectorWeightings"]:
             for sector in holding_info:
                 sectors[sector] = holding_info[sector]["raw"]
         sectors = {RAPIDAPI_SECTORS_MAP[name]: weight for name, weight in sectors.items()}
@@ -95,11 +95,11 @@ class YahooFinanceHistoryInterface(Interface):
 
     def send_request(self, symbol, region, start_date, end_date):
         request_fn = partial(self.request, start_date, end_date)
-        return self.get_responce(self.name, symbol, region, request_fn=request_fn)
+        return self.get_response(self.name, symbol, region, request_fn=request_fn)
 
     def pull(self, symbol, region, start_date, end_date):
-        responce = self.send_request(symbol, "US", start_date, end_date)
-        close_price = responce["Historical Prices"]["Close"]
+        response = self.send_request(symbol, "US", start_date, end_date)
+        close_price = response["Historical Prices"]["Close"]
         return close_price
 
 
@@ -118,9 +118,9 @@ class FmpCountryInterface(Interface):
         return json.loads(data)
 
     def pull(self, symbol, region):
-        responce = self.get_responce(self.name, symbol, region, request_fn=self.request)
+        response = self.get_response(self.name, symbol, region, request_fn=self.request)
         countries = {}
-        for item in responce:
+        for item in response:
             name = item["country"]
             weight = percent_to_float(item["weightPercentage"])
             countries[name] = weight
