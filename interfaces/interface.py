@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 from prisma.interfaces.cache import Cache
 from prisma.interfaces.wallet import Wallet
-from prisma.utils import convert_countries_to_codes, percent_to_float
+from prisma.utils import convert_countries_to_codes, percent_to_float, none_if_zero
 from prisma.constants import WALLET_FILE, RAPIDAPI_SECTORS_MAP
 
 
@@ -56,12 +56,19 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         # Single-number statistics
         stat = OrderedDict()
         stat["Symbol"] = symbol
-        stat["Name"] = response["quoteType"]["shortName"]
-        stat["P/E"] = response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"]
-        stat["P/S"] = response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"]
+        shortName = response["quoteType"]["shortName"]
+        longName = response["quoteType"]["longName"]  # sometimes, long name is shorter :)
+        stat["Name"] = shortName if len(shortName) < len(longName) else longName
+        stat["P/E"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"])
+        stat["P/S"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"])
         stat["Yield"] = response["defaultKeyStatistics"]["yield"]["raw"]
-        stat["Volume"] = response["price"]["averageDailyVolume3Month"]["raw"]
-        stat["TER"] = response["fundProfile"]["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"]
+        stat["Volume"] = none_if_zero(response["price"]["averageDailyVolume3Month"]["raw"])
+        stat["TER"] = none_if_zero(
+            response["fundProfile"]["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"]
+        )
+        stat["Price"] = none_if_zero(response["price"]["regularMarketPrice"]["raw"])
+        stat["50MA"] = none_if_zero(response["summaryDetail"]["fiftyDayAverage"]["raw"])
+        stat["200MA"] = none_if_zero(response["summaryDetail"]["twoHundredDayAverage"]["raw"])
 
         # Sectors and percentages
         sectors = {}
@@ -118,6 +125,9 @@ class FmpCountryInterface(Interface):
         return json.loads(data)
 
     def pull(self, symbol, region):
+        """
+        Information seem to be outdated, e.g. LIT info is wrong
+        """
         response = self.get_response(self.name, symbol, region, request_fn=self.request)
         countries = {}
         for item in response:
@@ -125,4 +135,3 @@ class FmpCountryInterface(Interface):
             weight = percent_to_float(item["weightPercentage"])
             countries[name] = weight
         return convert_countries_to_codes(countries)
-        # return pd.DataFrame.from_dict(countries, orient="index", columns=["weight"])

@@ -34,3 +34,7 @@ def convert_countries_to_codes(countries):
 
 def percent_to_float(x):
     return float(x.strip("%")) / 100
+
+
+def none_if_zero(x):
+    return x if x != 0 else None
