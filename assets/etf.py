@@ -36,16 +36,15 @@ class DataProcessor:
                     lhs[name] = weight
 
     def find_top(self, x, nlargest=SECTORS_COUNTRIES_DISPLAY_NUM, min_weight=SECTORS_COUNTRIES_MIN_WEIGHT):
-        largest = x.nlargest(nlargest, "weight")
+        largest = pd.DataFrame.from_dict(x, orient="index", columns=["weight"]).nlargest(nlargest, "weight")
         largest = largest[largest.weight > min_weight]
 
         top_selection = []
-        if len(largest) == 1:
-            top_selection.append(largest.index[0])
-        else:
-            for name, weight in largest.itertuples():
-                str_weight = f"{weight:.1f}".strip("0")
-                top_selection.append(f"{name}{str_weight}")
+        for name, weight in largest.itertuples():
+            new_name = f"{name}"
+            if weight < 0.99 and len(largest) > 1:
+                new_name += f"{weight:.1f}".strip("0")
+            top_selection.append(new_name)
         return " ".join(top_selection)
 
     def filter_price(self, price):

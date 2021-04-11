@@ -13,6 +13,7 @@ from prisma.rules import (
     LtgRule,
     StgRule,
 )
+from prisma.constants import HEADER_FORMAT
 
 
 class Portfolio:
@@ -27,14 +28,24 @@ class Portfolio:
             stat_data.append(asset.stat)
             self.countries[asset.symbol] = asset.countries
             self.sectors[asset.symbol] = asset.sectors
-        self.stat = pd.DataFrame(stat_data)
+        self.stat = pd.DataFrame(stat_data).set_index("Symbol")
 
     def display(self, by=None):
         if by:
-            stat = self.stat.sort_values(by=by).reset_index(drop=True)
+            stat = self.stat.sort_values(by=by)
         else:
             stat = self.stat
-        table = tabulate(stat, headers="keys", tablefmt="psql")
+
+        headers_new_name = {}
+        for header in list(stat):
+            if header in HEADER_FORMAT:
+                if "data" in HEADER_FORMAT[header]:
+                    stat[header] = stat[header].apply(HEADER_FORMAT[header]["data"])
+                if "header" in HEADER_FORMAT[header]:
+                    headers_new_name[header] = HEADER_FORMAT[header]["header"](header)
+        stat.rename(columns=headers_new_name, inplace=True)
+
+        table = tabulate(stat, headers="keys", tablefmt="psql", numalign="right", stralign="right")
         print(table)
 
 
@@ -47,28 +58,28 @@ class Portfolio:
 # https://etf-data.com/
 assets = [
     ETF("IVV"),
-    # ETF("LIT", top_countries=["china", "us", "kr"], industries=["EV"]),
-    # ETF("SOXX", top_countries=["us"], industries=["Semi"]),
-    # #    ETF("XDEV", top_countries=["us", "japan", "uk"]),
-    # ETF("VTV", top_countries=["us"]),
-    # ETF("VBR", top_countries=["us"]),
-    # ETF("IWN", top_countries=["us"]),
-    # ETF("RSP", top_countries=["us"]),
-    # ETF("VFH", top_countries=["us"]),
-    # ETF("DEM", top_countries=["taiwan", "china", "russia"]),
-    # ETF("KBE", top_countries=["us"]),
-    # ETF("KRE", top_countries=["us"]),
-    # ETF("VWO", top_countries=["china", "taiwan", "india"]),
-    # ETF("CHIQ", top_countries=["china"]),
-    # ETF("THD", top_countries=["thailand"]),
-    # ETF("VNM", top_countries=["vietnam"]),
-    # ETF("XME", top_countries=["us"]),
-    # ETF("VAW", top_countries=["us"]),
-    # #    ETF("EXSA", top_countries=["EU"]),
-    # #    ETF("EXV1", top_countries=["EU"]),
-    # #    ETF("SX7PEX", top_countries=["EU"]),
-    # ETF("DIA", top_countries=["us"]),
-    # ETF("CQQQ", top_countries=["china"]),
+    ETF("LIT", industries={"EV": 1}),
+    ETF("SOXX", industries={"Semi": 1}),
+    #    ETF("XDEV"),
+    ETF("VTV"),
+    ETF("VBR"),
+    ETF("IWN"),
+    ETF("RSP"),
+    ETF("VFH"),
+    ETF("DEM"),
+    ETF("KBE"),
+    ETF("KRE"),
+    ETF("VWO"),
+    ETF("CHIQ"),
+    ETF("THD"),
+    ETF("VNM"),
+    ETF("XME"),
+    ETF("VAW"),
+    #    ETF("EXSA"),
+    #    ETF("EXV1"),
+    #    ETF("SX7PEX"),
+    ETF("DIA"),
+    ETF("CQQQ"),
 ]
 
 portfolio = Portfolio(assets)
@@ -77,8 +88,8 @@ portfolio.display(by="Symbol")
 # instruments = convert_to_dict(instruments)
 
 # sectors_rule = SectorRule(
-#     strong_growing=["F", "H", "CD", "Semi"],
-#     fair_growing=["CS", "EV", "I"],
+#     strong_growing=["F", "I", "Semi"],
+#     fair_growing=["CS", "EV", "H", "CD"],
 #     fair_decline=["M", "E", "R"],
 #     strong_decline=["T"],
 # )

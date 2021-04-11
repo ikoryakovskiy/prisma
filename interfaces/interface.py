@@ -68,8 +68,7 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         for holding_info in responce["topHoldings"]["sectorWeightings"]:
             for sector in holding_info:
                 sectors[sector] = holding_info[sector]["raw"]
-        sectors = pd.DataFrame.from_dict(sectors, orient="index", columns=["weight"])
-        sectors = sectors.rename(index=RAPIDAPI_SECTORS_MAP)
+        sectors = {RAPIDAPI_SECTORS_MAP[name]: weight for name, weight in sectors.items()}
         return stat, sectors
 
 
@@ -125,5 +124,5 @@ class FmpCountryInterface(Interface):
             name = item["country"]
             weight = percent_to_float(item["weightPercentage"])
             countries[name] = weight
-        countries = convert_countries_to_codes(countries)
-        return pd.DataFrame.from_dict(countries, orient="index", columns=["weight"])
+        return convert_countries_to_codes(countries)
+        # return pd.DataFrame.from_dict(countries, orient="index", columns=["weight"])

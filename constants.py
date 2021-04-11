@@ -20,8 +20,43 @@ RAPIDAPI_SECTORS_MAP = {
     "healthcare": "H",
 }
 
+
+def format_as_million(num):
+    return f"{num/1000000:.2f}M"
+
+
+def format_as_percent(num, decimal_digits=1):
+    return round(num * 100, decimal_digits)
+
+
 HEADER_FORMAT = {
-    "Symbol": 1,
+    "Yield": {
+        "header": "{}, %".format,
+        "data": format_as_percent,
+    },
+    "Volume": {
+        "data": format_as_million,
+    },
+    "TER": {
+        "header": "{}, %".format,
+        "data": lambda x: format_as_percent(x, decimal_digits=2),
+    },
+    "1M": {
+        "header": "{}, %".format,
+        "data": format_as_percent,
+    },
+    "3M": {
+        "header": "{}, %".format,
+        "data": format_as_percent,
+    },
+    "1Y": {
+        "header": "{}, %".format,
+        "data": format_as_percent,
+    },
+    "5Y": {
+        "header": "{}, %".format,
+        "data": format_as_percent,
+    },
 }
 
 SECTORS_COUNTRIES_DISPLAY_NUM = 3  # In counts
