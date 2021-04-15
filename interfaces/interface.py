@@ -17,6 +17,7 @@ class Interface:
     def __init__(self, name, update_missing=False, **kwargs):
         super().__init__(**kwargs)
         self.name = name
+        self.update_missing = update_missing
         self.wallet = Wallet(WALLET_FILE)
         self.cache = Cache()
 
@@ -24,11 +25,17 @@ class Interface:
         query = {"symbol": symbol, "region": region}
         cache_filename = self.cache.get_filename(query, name)
         if os.path.isfile(cache_filename):
+            # if fresh record is found, then use it
             return self.cache.load_cahced_response(cache_filename)
-        else:
-            data = request_fn(query)
-            self.cache.cache_response(data, cache_filename)
-            return data
+        elif self.update_missing:
+            # else try to search the older record if wanted
+            cache_filename = self.cache.get_older_filename(query, name)
+            if cache_filename:
+                return self.cache.load_cahced_response(cache_filename)
+        # else ask server for a response
+        data = request_fn(query)
+        self.cache.cache_response(data, cache_filename)
+        return data
 
 
 class RapidApiInterface(Interface):

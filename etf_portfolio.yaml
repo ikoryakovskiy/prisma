@@ -1,8 +1,9 @@
 ETF:
-  - IVV
-  - LIT:
-      industries: {EV: 1}
-  - VTV
+  - VBR
+  # - IVV
+  # - LIT:
+  #     industries: {EV: 1}
+  # - VTV
 
 
 # ETF("SOXX", industries={

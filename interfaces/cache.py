@@ -1,6 +1,7 @@
 import os
 from datetime import date
 import pickle
+import glob
 
 from prisma.constants import CACHE_DIR
 
@@ -11,15 +12,23 @@ class Cache:
         region = query["region"]
         return f"{region}-{symbol}-{data_type}"
 
-    def get_full_name(self, query, data_type):
+    def get_full_name(self, query, data_type, date):
         name = self.get_short_name(query, data_type)
-        today = date.today()
-        return f"{name}-{today}.pkl"
+        return f"{name}-{date}.pkl"
 
     def get_filename(self, query, data_type):
-        full_name = self.get_full_name(query, data_type)
+        today = date.today()
+        full_name = self.get_full_name(query, data_type, today)
         filename = os.path.join(CACHE_DIR, full_name)
         return filename
+
+    def get_older_filename(self, query, data_type):
+        full_name = self.get_full_name(query, data_type, "*")
+        filename = os.path.join(CACHE_DIR, full_name)
+        files = glob.glob(filename)
+        if files:
+            return sorted(files)[-1]  # take the latest
+        return None
 
     def cache_response(self, data, filename):
         with open(filename, "wb") as file:
