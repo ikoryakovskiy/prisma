@@ -32,4 +32,5 @@ class ConvDateSeries:
             weight = filter(days_to_mean)
             filtered_x += value * weight
             norm += weight
-        return filtered_x / norm
+        if norm > 0:
+            return filtered_x / norm

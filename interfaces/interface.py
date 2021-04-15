@@ -31,12 +31,12 @@ class Interface:
             return self.cache.load_cahced_response(cache_filename)
         elif self.allow_outdated:
             # else try to search the older record if wanted
-            cache_filename = self.cache.get_older_filename(query, name)
-            if cache_filename:
-                logging.debug("Reading the outdated record %s", cache_filename)
-                return self.cache.load_cahced_response(cache_filename)
+            older_cache_filename = self.cache.get_older_filename(query, name)
+            if older_cache_filename:
+                logging.debug("Reading the outdated record %s", older_cache_filename)
+                return self.cache.load_cahced_response(older_cache_filename)
         # else ask server for a response
-        logging.debug("Requesting %s info about %s-%s asset", name, symbol, region)
+        logging.debug("Requesting %s info about %s %s asset", name, symbol, region)
         data = request_fn(query)
         self.cache.cache_response(data, cache_filename)
         return data

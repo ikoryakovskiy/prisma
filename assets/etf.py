@@ -69,6 +69,9 @@ class Asset:
             price_filter = ConvDateSeries()
             price_old = price_filter(price, day, std)
             price_today = price_filter(price, today, std)
+            if price_old is None or price_today is None:
+                price_change[name] = None
+                continue
             change = (price_today - price_old) / price_old
             if m > 12:
                 change *= 12 / m

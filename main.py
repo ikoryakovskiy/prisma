@@ -146,4 +146,5 @@ if __name__ == "__main__":
         Cache().clean()
 
     portfolio = Portfolio(args.assets, args.allow_outdated)
-    portfolio.display(by="Symbol")
+    # portfolio.display(by="Symbol")
+    portfolio.display()

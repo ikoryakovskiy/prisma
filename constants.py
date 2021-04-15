@@ -22,11 +22,13 @@ RAPIDAPI_SECTORS_MAP = {
 
 
 def format_as_million(num):
-    return f"{num/1000000:.2f}M"
+    if num is not None:
+        return f"{num/1000000:.2f}M"
 
 
 def format_as_percent(num, decimal_digits=1):
-    return round(num * 100, decimal_digits)
+    if num is not None:
+        return round(num * 100, decimal_digits)
 
 
 HEADER_FORMAT = {
