@@ -36,6 +36,8 @@ class Asset:
                     lhs[name] = weight
 
     def find_top(self, x, nlargest=SECTORS_COUNTRIES_DISPLAY_NUM, min_weight=SECTORS_COUNTRIES_MIN_WEIGHT):
+        if not x:
+            return ""
         largest = pd.DataFrame.from_dict(x, orient="index", columns=["weight"]).nlargest(nlargest, "weight")
         largest = largest[largest.weight >= min_weight]
 

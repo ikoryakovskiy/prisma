@@ -1,3 +1,6 @@
+import argparse
+from ruamel.yaml import YAML
+from pathlib import Path
 import pandas as pd
 from tabulate import tabulate
 
@@ -16,9 +19,37 @@ from prisma.rules import (
 from prisma.constants import HEADER_FORMAT
 
 
+# Useful information
+# https://www.etfbreakdown.com/
+
+# Useful APIs
+# https://financialmodelingprep.com/developer/docs/dashboard
+# https://finnhub.io/docs/api/etfs-country-exposure
+# https://etf-data.com/
+
+
 class Portfolio:
-    def __init__(self, assets):
+    def __init__(self, filename, update_required):
+        path = Path(filename)
+        yaml = YAML(typ="safe")
+        config = yaml.load(path)
+        assets = self.reload_and_update(config, update_required)
+        assert assets, "Assets were not found"
         self.format_and_store(assets)
+
+    def reload_and_update(self, asset_config, update_required):
+        assets = []
+        asset_classes = {"ETF": ETF}
+        for asset_class, asset_constructor in asset_classes.items():
+            config = asset_config.get(asset_class)
+            if config:
+                for asset in config:
+                    if isinstance(asset, str):
+                        assets.append(asset_constructor(asset))
+                    elif isinstance(asset, dict):
+                        for name, kwargs in asset.items():
+                            assets.append(asset_constructor(name, **kwargs))
+        return assets
 
     def format_and_store(self, assets):
         self.countries = {}
@@ -49,53 +80,18 @@ class Portfolio:
         print(table)
 
 
-# Useful information
-# https://www.etfbreakdown.com/
-
-
-# https://financialmodelingprep.com/developer/docs/dashboard
-# https://finnhub.io/docs/api/etfs-country-exposure
-# https://etf-data.com/
-assets = [
-    ETF("IVV"),
-    ETF("LIT", industries={"EV": 1}),
-    ETF("SOXX", industries={"Semi": 1}),
-    # ETF("XDEV"),
-    ETF("VTV"),
-    ETF("VBR"),
-    ETF("IWN"),
-    ETF("RSP"),
-    ETF("VFH"),
-    ETF("DEM"),
-    ETF("KBE"),
-    ETF("KRE"),
-    ETF("VWO"),
-    ETF("CHIQ"),
-    ETF("THD"),
-    ETF("VNM"),
-    ETF("XME"),
-    ETF("VAW"),
-    # ETF("EXSA"),
-    # ETF("EXV1"),
-    # ETF("SX7PEX"),
-    ETF("DIA"),
-    ETF("CQQQ"),
-]
-
-portfolio = Portfolio(assets)
-portfolio.display(by="Symbol")
-
+# def analyze_portfolio():
 # instruments = convert_to_dict(instruments)
 
 # sectors_rule = SectorRule(
 #     strong_growing=["F", "I", "Semi"],
-#     fair_growing=["CS", "EV", "H", "CD"],
+#     fair_growing=["CS", "EV", "H", "CD", "Comod"],
 #     fair_decline=["M", "E", "R"],
 #     strong_decline=["T"],
 # )
 
 # countries_rule = CountryRule(
-#     strong_growing=["china", "us"],
+#     strong_growing=["china", "us",  "hk"],
 #     fair_growing=[
 #         "EU",
 #         "russia",
@@ -129,3 +125,15 @@ portfolio.display(by="Symbol")
 # table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
 
 # print(table.to_string(index=False))  # , float_format="%.2f"))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Prisma is a software tool that helps you to disintegrate and analyze stocks on a market."
+    )
+    parser.add_argument("assets", help="A protfolio file with assets to open")
+    parser.add_argument("--update", action="store_true", default=False, help="Update database records up to date.")
+    args = parser.parse_args()
+
+    portfolio = Portfolio(args.assets, args.update)
+    portfolio.display(by="Symbol")

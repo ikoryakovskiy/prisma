@@ -1,0 +1,33 @@
+ETF:
+  - IVV
+  - LIT:
+      industries: {EV: 1}
+  - VTV
+
+
+# ETF("SOXX", industries={
+#     "Semi": 1
+# }),
+# ETF("VBR"),
+# ETF("IWN"),
+# ETF("RSP"),
+# ETF("VFH"),
+# ETF("DEM"),
+# ETF("KBE"),
+# ETF("KRE"),
+# ETF("VWO"),
+# ETF("CHIQ"),
+# ETF("THD"),
+# ETF("VNM"),
+# ETF("XME"),
+# ETF("VAW"),
+# ETF("DIA"),
+# ETF("CQQQ"),
+# ETF("DBC", industries={
+#     "Comod": 1
+# }),
+# # ETF("EXSA"),
+# # ETF("EXV1"),
+# # ETF("SX7PEX"),
+# # ETF("XDEV"),
+# ]
