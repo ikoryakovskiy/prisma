@@ -3,6 +3,7 @@ from ruamel.yaml import YAML
 from pathlib import Path
 import pandas as pd
 from tabulate import tabulate
+import logging
 
 from prisma.assets import ETF
 from prisma.utils import find_name
@@ -18,6 +19,8 @@ from prisma.rules import (
 )
 from prisma.constants import HEADER_FORMAT
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 # Useful information
 # https://www.etfbreakdown.com/
@@ -29,15 +32,15 @@ from prisma.constants import HEADER_FORMAT
 
 
 class Portfolio:
-    def __init__(self, filename, update_missing):
+    def __init__(self, filename, allow_outdated):
         path = Path(filename)
         yaml = YAML(typ="safe")
         config = yaml.load(path)
-        assets = self.reload_and_update(config, update_missing)
+        assets = self.reload_and_update(config, allow_outdated)
         assert assets, "Assets were not found"
         self.format_and_store(assets)
 
-    def reload_and_update(self, asset_config, update_missing):
+    def reload_and_update(self, asset_config, allow_outdated):
         assets = []
         asset_classes = {"ETF": ETF}
         for asset_class, asset_constructor in asset_classes.items():
@@ -45,10 +48,10 @@ class Portfolio:
             if config:
                 for asset in config:
                     if isinstance(asset, str):
-                        assets.append(asset_constructor(asset, update_missing))
+                        assets.append(asset_constructor(asset, allow_outdated))
                     elif isinstance(asset, dict):
                         for name, kwargs in asset.items():
-                            assets.append(asset_constructor(name, update_missing, **kwargs))
+                            assets.append(asset_constructor(name, allow_outdated, **kwargs))
         return assets
 
     def format_and_store(self, assets):
@@ -133,13 +136,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("assets", help="A protfolio file with assets to open")
     parser.add_argument(
-        "--update-missing",
-        action="store_true",
-        default=False,
-        help="Update assets that are missing in the database records"
-        "(for all existing assets use the latest available record).",
+        "--allow-outdated", action="store_true", default=False, help="Allow using outdated asset records"
     )
     args = parser.parse_args()
 
-    portfolio = Portfolio(args.assets, args.update_missing)
+    portfolio = Portfolio(args.assets, args.allow_outdated)
     portfolio.display(by="Symbol")

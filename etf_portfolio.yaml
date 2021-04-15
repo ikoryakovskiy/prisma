@@ -1,6 +1,6 @@
 ETF:
   - VBR
-  # - IVV
+  - IVV
   # - LIT:
   #     industries: {EV: 1}
   # - VTV

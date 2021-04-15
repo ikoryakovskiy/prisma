@@ -6,6 +6,7 @@ from yahoofinance import HistoricalPrices
 from urllib.request import urlopen
 import pandas as pd
 from collections import OrderedDict
+import logging
 
 from prisma.interfaces.cache import Cache
 from prisma.interfaces.wallet import Wallet
@@ -14,10 +15,10 @@ from prisma.constants import WALLET_FILE, RAPIDAPI_SECTORS_MAP
 
 
 class Interface:
-    def __init__(self, name, update_missing=False, **kwargs):
+    def __init__(self, name, allow_outdated=False, **kwargs):
         super().__init__(**kwargs)
         self.name = name
-        self.update_missing = update_missing
+        self.allow_outdated = allow_outdated
         self.wallet = Wallet(WALLET_FILE)
         self.cache = Cache()
 
@@ -26,13 +27,16 @@ class Interface:
         cache_filename = self.cache.get_filename(query, name)
         if os.path.isfile(cache_filename):
             # if fresh record is found, then use it
+            logging.debug("Reading the up-to-date record %s", cache_filename)
             return self.cache.load_cahced_response(cache_filename)
-        elif self.update_missing:
+        elif self.allow_outdated:
             # else try to search the older record if wanted
             cache_filename = self.cache.get_older_filename(query, name)
             if cache_filename:
+                logging.debug("Reading the outdated record %s", cache_filename)
                 return self.cache.load_cahced_response(cache_filename)
         # else ask server for a response
+        logging.debug("Requesting %s info about %s-%s asset", name, symbol, region)
         data = request_fn(query)
         self.cache.cache_response(data, cache_filename)
         return data
