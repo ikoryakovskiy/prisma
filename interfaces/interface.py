@@ -14,8 +14,9 @@ from prisma.constants import WALLET_FILE, RAPIDAPI_SECTORS_MAP
 
 
 class Interface:
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name, update_missing=False, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
         self.wallet = Wallet(WALLET_FILE)
         self.cache = Cache()
 
@@ -31,8 +32,8 @@ class Interface:
 
 
 class RapidApiInterface(Interface):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.headers = {
             "x-rapidapi-key": self.wallet.read_key("rapidapi"),
             "x-rapidapi-host": "apidojo-yahoo-finance-v1.p.rapidapi.com",
@@ -44,9 +45,8 @@ class RapidApiInterface(Interface):
 
 
 class RapidApiStatisticsInterface(RapidApiInterface):
-    def __init__(self, name="rapidapi_statistics"):
-        super().__init__()
-        self.name = name
+    def __init__(self, **kwargs):
+        super().__init__(name="rapidapi_statistics", **kwargs)
         url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-statistics"
         self.request_fn = partial(self.request, url)
 
@@ -80,9 +80,8 @@ class RapidApiStatisticsInterface(RapidApiInterface):
 
 
 class RapidApiHistoryInterface(RapidApiInterface):
-    def __init__(self, name="rapidapi_history"):
-        super().__init__()
-        self.name = name
+    def __init__(self, **kwargs):
+        super().__init__(name="rapidapi_history", **kwargs)
         url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v3/get-historical-data"
         self.request_fn = partial(self.request, url)
 
@@ -92,9 +91,8 @@ class RapidApiHistoryInterface(RapidApiInterface):
 
 
 class YahooFinanceHistoryInterface(Interface):
-    def __init__(self, name="yfinance_history"):
-        super().__init__()
-        self.name = name
+    def __init__(self, **kwargs):
+        super().__init__(name="yfinance_history", **kwargs)
 
     def request(self, start_date, end_date, query):
         req = HistoricalPrices(query["symbol"], start_date=start_date, end_date=end_date)
@@ -111,9 +109,8 @@ class YahooFinanceHistoryInterface(Interface):
 
 
 class FmpCountryInterface(Interface):
-    def __init__(self, name="fmp"):
-        super().__init__()
-        self.name = name
+    def __init__(self, **kwargs):
+        super().__init__(name="fmp", **kwargs)
         self.key = self.wallet.read_key("financialmodelingprep")
         self.url = "https://financialmodelingprep.com/api/v3/etf-country-weightings"
 

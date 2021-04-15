@@ -21,6 +21,10 @@ from prisma.utils import ConvDateSeries, convert_countries_to_codes
 
 
 class Asset:
+    def __init__(self, symbol, update_missing):
+        self.symbol = symbol
+        self.update_missing = update_missing
+
     def get_history_span(self):
         end_date = date.today()
         half_window = WINDOW_MULTIPLIER * STD_DAYS_5Y
@@ -73,18 +77,17 @@ class Asset:
 
 
 class ETF(Asset):
-    def __init__(self, symbol, countries=None, industries=None):
-        super().__init__()
-        self.symbol = symbol
+    def __init__(self, symbol, update_missing, countries=None, industries=None):
+        super().__init__(symbol, update_missing)
 
-        istat = RapidApiStatisticsInterface()
+        istat = RapidApiStatisticsInterface(update_missing=self.update_missing)
         self.stat, self.sectors = istat.pull(self.symbol, "US")
 
-        ihistory = YahooFinanceHistoryInterface()
+        ihistory = YahooFinanceHistoryInterface(update_missing=self.update_missing)
         start_date, end_date = self.get_history_span()
         self.price = ihistory.pull(self.symbol, "US", start_date, end_date)
 
-        icountries = FmpCountryInterface()
+        icountries = FmpCountryInterface(update_missing=self.update_missing)
         self.countries = icountries.pull(self.symbol, "US")
 
         # append user-defined knowledge
