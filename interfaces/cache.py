@@ -2,6 +2,7 @@ import os
 from datetime import date
 import pickle
 import glob
+import logging
 
 from prisma.constants import CACHE_DIR
 
@@ -39,5 +40,9 @@ class Cache:
             return pickle.load(file)
 
     def clean(self):
-        # TODO: implement
-        pass
+        files = glob.glob(os.path.join(CACHE_DIR, "*.pkl"))
+        today = date.today()
+        for filename in files:
+            if not str(today) in filename:
+                logging.debug("Removing file %s", filename)
+                os.remove(filename)

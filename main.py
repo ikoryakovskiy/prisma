@@ -7,6 +7,7 @@ import logging
 
 from prisma.assets import ETF
 from prisma.utils import find_name
+from prisma.interfaces.cache import Cache
 from prisma.rules import (
     Screener,
     SectorRule,
@@ -138,7 +139,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--allow-outdated", action="store_true", default=False, help="Allow using outdated asset records"
     )
+    parser.add_argument("--clean-cache", action="store_true", default=False, help="Remove all outdated records")
     args = parser.parse_args()
+
+    if args.clean_cache:
+        Cache().clean()
 
     portfolio = Portfolio(args.assets, args.allow_outdated)
     portfolio.display(by="Symbol")
