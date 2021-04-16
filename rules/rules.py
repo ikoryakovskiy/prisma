@@ -64,10 +64,10 @@ class CountryRule(TextBasedRule):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = "CountryScore"
-        self.strong_growing = convert_to_codes(self.strong_growing)
-        self.fair_growing = convert_to_codes(self.fair_growing)
-        self.fair_decline = convert_to_codes(self.fair_decline)
-        self.strong_decline = convert_to_codes(self.strong_decline)
+        self.strong_growing = convert_countries_to_codes(self.strong_growing)
+        self.fair_growing = convert_countries_to_codes(self.fair_growing)
+        self.fair_decline = convert_countries_to_codes(self.fair_decline)
+        self.strong_decline = convert_countries_to_codes(self.strong_decline)
 
 
 class PePsRule:

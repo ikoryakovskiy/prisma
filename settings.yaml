@@ -1,0 +1,15 @@
+Rules:
+  - SectorRule:
+      strong_growing: [F, I, Semi]
+      fair_growing: [CS, EV, H, CD, Comod]
+      fair_decline: [M, E, R]
+      strong_decline: [T]
+  - CountryRule: # TODO: rename to RegionRule. Currently cannot use EU
+      strong_growing: [china, US]
+      fair_growing: [FR, DE, NL, GB, KR, india, taiwan, japan, thailand, vietnam]
+      fair_decline: [russia]
+  - TerRule
+  - PePsRule
+  - DeclineRule
+  - LtgRule
+  - StgRule

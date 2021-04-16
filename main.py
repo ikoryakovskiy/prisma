@@ -33,13 +33,17 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 class Portfolio:
-    def __init__(self, filename, allow_outdated):
-        path = Path(filename)
-        yaml = YAML(typ="safe")
-        config = yaml.load(path)
-        assets = self.reload_and_update(config, allow_outdated)
+    def __init__(self, settings_file, assets_file, allow_outdated):
+        self.settings = self.read_yaml(settings_file)
+        assets_config = self.read_yaml(assets_file)
+        assets = self.reload_and_update(assets_config, allow_outdated)
         assert assets, "Assets were not found"
         self.format_and_store(assets)
+
+    def read_yaml(self, filename):
+        path = Path(filename)
+        yaml = YAML(typ="safe")
+        return yaml.load(path)
 
     def reload_and_update(self, asset_config, allow_outdated):
         assets = []
@@ -84,53 +88,6 @@ class Portfolio:
         print(table)
 
 
-# def analyze_portfolio():
-# instruments = convert_to_dict(instruments)
-
-# sectors_rule = SectorRule(
-#     strong_growing=["F", "I", "Semi"],
-#     fair_growing=["CS", "EV", "H", "CD", "Comod"],
-#     fair_decline=["M", "E", "R"],
-#     strong_decline=["T"],
-# )
-
-# countries_rule = CountryRule(
-#     strong_growing=["china", "us",  "hk"],
-#     fair_growing=[
-#         "EU",
-#         "russia",
-#         "india",
-#         "taiwan",
-#         "kr",
-#         "japan",
-#         "uk",
-#         "thailand",
-#         "vietnam",
-#     ],
-# )
-
-# screener = Screener(
-#     rules=[
-#         TerRule(),
-#         PePsRule(),
-#         countries_rule,
-#         sectors_rule,
-#         DeclineRule(),
-#         LtgRule(),
-#         StgRule(),
-#     ]
-# )
-
-# screener(table, instruments)
-# table = table.sort_values(by="TotalScore", ascending=False)
-
-# old_columns = table.columns
-# new_columns = [name.replace("Score", "S") for name in old_columns]
-# table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
-
-# print(table.to_string(index=False))  # , float_format="%.2f"))
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Prisma is a software tool that helps you to disintegrate and analyze stocks on a market."
@@ -145,6 +102,19 @@ if __name__ == "__main__":
     if args.clean_cache:
         Cache().clean()
 
-    portfolio = Portfolio(args.assets, args.allow_outdated)
+    portfolio = Portfolio("settings.yaml", args.assets, args.allow_outdated)
     # portfolio.display(by="Symbol")
     portfolio.display()
+
+    screener = Screener(rules=portfolio.settings["Rules"])
+
+    # instruments = convert_to_dict(instruments)
+
+    # screener(portfolio)
+    # table = table.sort_values(by="TotalScore", ascending=False)
+
+    # old_columns = table.columns
+    # new_columns = [name.replace("Score", "S") for name in old_columns]
+    # table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
+
+    # print(table.to_string(index=False))  # , float_format="%.2f"))

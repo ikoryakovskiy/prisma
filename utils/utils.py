@@ -22,14 +22,23 @@ def find_name(instruments, query):
 
 
 def convert_countries_to_codes(countries):
-    codes = {}
-    if countries:
+    if countries and isinstance(countries, dict):
+        codes = {}
         for name, weight in countries.items():
             matches = pycountry.countries.search_fuzzy(name)
             if not matches:
                 raise ValueError
             codes[matches[0].alpha_2] = weight
-    return codes
+        return codes
+    elif countries and isinstance(countries, list):
+        codes = []
+        for name in countries:
+            matches = pycountry.countries.search_fuzzy(name)
+            if not matches:
+                raise ValueError
+            codes.append(matches[0].alpha_2)
+        return codes
+    return {}
 
 
 def percent_to_float(x):
