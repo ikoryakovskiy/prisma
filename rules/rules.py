@@ -3,61 +3,60 @@ import pandas as pd
 from prisma.utils import convert_countries_to_codes, find_name
 
 
-class TextBasedRule:
+class Rule:
+    def __init__(self, name):
+        self.name = name
+
+
+class TextBasedRule(Rule):
     def __init__(
         self,
         strong_growing=None,
         fair_growing=None,
         fair_decline=None,
         strong_decline=None,
+        **kwargs,
     ):
+        super().__init__(**kwargs)
         # TODO: check that no intersection happens
         self.strong_growing = strong_growing or []
         self.fair_growing = fair_growing or []
         self.fair_decline = fair_decline or []
         self.strong_decline = strong_decline or []
 
-    def evaluate_single(self, categories, prediction, multiplier):
+    def evaluate_single(self, data, prediction, multiplier):
         score = 0
-        for cat in categories:
-            if cat in prediction:
-                if isinstance(categories, dict):
-                    score += categories[cat]
+        for categoty in data:
+            if categoty in prediction:
+                if isinstance(data, dict):
+                    score += data[categoty]
                 else:
-                    score += 1.0 / len(categories)
+                    score += 1.0 / len(data)
         return multiplier * score
 
-    def evaluate(self, instrument):
-        if "sector" in self.name.lower():
-            categories = instrument.sectors.copy()
-            industries = {ind: 1.0 for ind in instrument.industries}
-            categories.update(industries)
-        elif "countr" in self.name.lower():
-            categories = instrument.country_codes
+    def evaluate(self, data):
         score = 0
-        score += self.evaluate_single(categories, self.strong_growing, 1)
-        score += self.evaluate_single(categories, self.fair_growing, 0.5)
-        score += self.evaluate_single(categories, self.fair_decline, -0.5)
-        score += self.evaluate_single(categories, self.strong_decline, -1)
+        score += self.evaluate_single(data, self.strong_growing, 1)
+        score += self.evaluate_single(data, self.fair_growing, 0.5)
+        score += self.evaluate_single(data, self.fair_decline, -0.5)
+        score += self.evaluate_single(data, self.strong_decline, -1)
         return score
 
-    def process(self, instrument_names, instruments):
+    def calculate_scores(self, symbols, data):
         scores = []
-        for name in instrument_names:
-            score = self.evaluate(instruments[name])
+        for symbol in symbols:
+            score = self.evaluate(data[symbol])
             scores.append(score)
-        # return pd.Series(dict(zip(instrument_names, scores)), name=self.name)
-        return pd.Series(scores, name=self.name, index=instrument_names.index)
-
-    def __call__(self, table, instruments):
-        new_column = self.process(table["Symbol"], instruments)
-        table[new_column.name] = new_column
+        return pd.Series(scores, name=self.name, index=symbols)
 
 
 class SectorRule(TextBasedRule):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.name = "SectorScore"
+        super().__init__(name="SectorScore", **kwargs)
+
+    def __call__(self, portfolio):
+        symbols = portfolio.stat.index
+        return self.calculate_scores(symbols, portfolio.sectors)
 
 
 class CountryRule(TextBasedRule):

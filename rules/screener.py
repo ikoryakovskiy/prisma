@@ -20,9 +20,10 @@ class Screener:
                 dynamically_created_rule = clsmembers[rule]()
                 self.rules.append(dynamically_created_rule)
 
-    def __call__(self, table, instruments):
+    def __call__(self, portfolio):
+        columns = []
         for rule in self.rules:
-            rule(table, instruments)
+            columns = rule(portfolio)
 
         total_score = pd.DataFrame([0] * len(table), columns=["TotalScore"], index=table.index)
         for column in table.columns:

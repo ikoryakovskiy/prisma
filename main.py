@@ -110,11 +110,11 @@ if __name__ == "__main__":
 
     # instruments = convert_to_dict(instruments)
 
-    # screener(portfolio)
-    # table = table.sort_values(by="TotalScore", ascending=False)
+    analysis_results = screener(portfolio)
+# table = table.sort_values(by="TotalScore", ascending=False)
 
-    # old_columns = table.columns
-    # new_columns = [name.replace("Score", "S") for name in old_columns]
-    # table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
+# old_columns = table.columns
+# new_columns = [name.replace("Score", "S") for name in old_columns]
+# table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
 
-    # print(table.to_string(index=False))  # , float_format="%.2f"))
+# print(table.to_string(index=False))  # , float_format="%.2f"))
