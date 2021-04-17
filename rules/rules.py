@@ -77,11 +77,15 @@ class PePsRule(Rule):
         super().__init__(name=name, **kwargs)
 
     def process(self, pe, ps):
+        PE_THRESHOLD = 20
+        PS_THRESHOLD = 2
+        temp_pe = pe.copy().fillna(PE_THRESHOLD)
+        temp_ps = ps.copy().fillna(PS_THRESHOLD)
+
         new_column = pd.Series(0, index=pe.index, name=self.name)
-        new_column[(pe < 20) & (ps < 2)] = 0.5
-        only_one = ((pe >= 20) & (ps < 2)) | ((pe < 20) & (ps >= 2))
+        new_column[(temp_pe < 20) & (temp_ps < 2)] = 0.5
+        only_one = ((temp_pe >= 20) & (temp_ps < 2)) | ((temp_pe < 20) & (temp_ps >= 2))
         new_column[only_one] = 0.25
-        new_column[(pe >= 20) & (ps >= 2)] = 0.0
         return new_column
 
     def __call__(self, portfolio):

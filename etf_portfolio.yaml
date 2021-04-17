@@ -20,47 +20,47 @@ ETF:
   - VAW
   - DIA
   - CQQQ
-  # - DBC:
-  #     industries: {"Comod": 1}
-  # # - EXSA
-  # # - EXV1
-  # # - SX7PEX
-  # # - XDEV
-  # - ARKW
-  # - ARKG
-  # - ICLN
-  # - BOTZ
-  # - FINX
-  # - PALL
-  # - JETS
-  # - PRNT
-  # - GLTR
-  # - IBUY
-  # - EWA
-  # - XLY
-  # - VPU
-  # - VNQ
-  # - IAU
-  # - SLV
-  # - HERO
-  # - INDA
-  # - ROBO
-  # # - EDOC
-  # - SKYY
-  # - SNSR
-  # # - VCLT
-  # # - IMEU
-  # - SPLV
-  # - IBB
-  # - GREK
-  # - SQQQ
-  # # - LQD
-  # # - IHYG
-  # - EMB
-  # - VHT
-  # - JNK
-  # - SHYG
-  # - FLOT
-  # - TLT
-  # - CIBR
-  # - EWZ
+  - DBC:
+      industries: {"Comod": 1}
+  # - EXSA
+  # - EXV1
+  # - SX7PEX
+  # - XDEV
+  - ARKW
+  - ARKG
+  - ICLN
+  - BOTZ
+  - FINX
+  - PALL
+#   - JETS
+  - PRNT
+  - GLTR
+  - IBUY
+  - EWA
+  - XLY
+  - VPU
+  - VNQ
+  - IAU
+  - SLV
+  - HERO
+  - INDA
+  - ROBO
+  # - EDOC
+  - SKYY
+  - SNSR
+  # - VCLT
+  # - IMEU
+  - SPLV
+  - IBB
+  - GREK
+  - SQQQ
+  # - LQD
+  # - IHYG
+  - EMB
+  - VHT
+  - JNK
+  - SHYG
+  - FLOT
+  - TLT
+  - CIBR
+  - EWZ

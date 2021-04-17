@@ -18,10 +18,10 @@ class Screener:
                 self.rules.append(dynamically_created_rule)
 
     def __call__(self, portfolio):
-        columns = []
+        columns = [portfolio.stat["Name"]]
         for rule in self.rules:
             columns.append(rule(portfolio))
 
         scores = pd.concat(columns, axis=1, keys=[col.name for col in columns])
-        scores["TotalScore"] = scores.sum(axis=1)
-        return scores
+        scores["Total score"] = scores.sum(axis=1, numeric_only=True)
+        return scores.sort_values(by="Total score", ascending=False)

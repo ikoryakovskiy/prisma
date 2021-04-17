@@ -94,21 +94,14 @@ if __name__ == "__main__":
         Cache().clean()
 
     portfolio = Portfolio("settings.yaml", args.assets, args.allow_outdated)
-    # portfolio.display(by="Symbol")
-    portfolio.display()
 
     screener = Screener(rules=portfolio.settings["Rules"])
-
-    # instruments = convert_to_dict(instruments)
-
     asset_scores = screener(portfolio)
-    asset_scores = asset_scores.sort_values(by="TotalScore", ascending=False)
 
-    # old_columns = table.columns
-    # new_columns = [name.replace("Score", "S") for name in old_columns]
-    # table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
+    portfolio.stat = portfolio.stat.reindex(asset_scores.index)
+    portfolio.stat = portfolio.stat.head(10)
+    asset_scores = asset_scores.head(10)
+    portfolio.display()
 
     table = tabulate(asset_scores, headers="keys", tablefmt="psql", numalign="right", stralign="right")
     print(table)
-
-    # print(table.to_string(index=False))  # , float_format="%.2f"))
