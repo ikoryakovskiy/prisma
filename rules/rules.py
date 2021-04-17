@@ -51,7 +51,7 @@ class TextBasedRule(Rule):
 
 
 class SectorRule(TextBasedRule):
-    def __init__(self, name="SectorScore", **kwargs):
+    def __init__(self, name="Sector", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def __call__(self, portfolio):
@@ -60,7 +60,7 @@ class SectorRule(TextBasedRule):
 
 
 class CountryRule(TextBasedRule):
-    def __init__(self, name="CountryScore", **kwargs):
+    def __init__(self, name="Country", **kwargs):
         super().__init__(name=name, **kwargs)
         self.strong_growing = convert_countries_to_codes(self.strong_growing)
         self.fair_growing = convert_countries_to_codes(self.fair_growing)
@@ -73,7 +73,7 @@ class CountryRule(TextBasedRule):
 
 
 class PePsRule(Rule):
-    def __init__(self, name="PePsScore", **kwargs):
+    def __init__(self, name="P/E P/S", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def process(self, pe, ps):
@@ -91,14 +91,14 @@ class PePsRule(Rule):
 
 
 class TerRule(Rule):
-    def __init__(self, name="TerScore", **kwargs):
+    def __init__(self, name="TER", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def process(self, column):
         new_column = pd.Series(0, index=column.index, name=self.name)
-        new_column[column < 0.2] = 0.2
-        new_column[(column >= 0.2) & (column < 0.5)] = 0.1
-        new_column[column >= 0.5] = 0.0
+        new_column[column < 0.002] = 0.2
+        new_column[(column >= 0.002) & (column < 0.005)] = 0.1
+        new_column[column >= 0.005] = 0.0
         return new_column
 
     def __call__(self, portfolio):
@@ -107,7 +107,7 @@ class TerRule(Rule):
 
 
 class DeclineRule(Rule):
-    def __init__(self, name="DeclineScore", **kwargs):
+    def __init__(self, name="Decline score", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def process(self, m1, m3, y5):
@@ -116,43 +116,45 @@ class DeclineRule(Rule):
         y5_per_month = y5.copy() / 12
         m3_per_month = m3.copy() / 3
 
-        long_term_grouth = y5 > 15  # average groth > 15 %
-        m1_m3_below_y5 = (y5_per_month > m3_per_month) | (y5_per_month > m1)
-        m1_m3_neg = (m1 < 0) & (m3 < 0)
+        MINIMUM_EXPECTED_YEARLY_GROUTH = 0.15  # in %
+        long_term_grouth = y5 > MINIMUM_EXPECTED_YEARLY_GROUTH
 
-        m1_pos_little_m3_neg = (m1 > 0) & (m3 < 0) & (m1 + m3 < 5)
-        m1_pos_much_m3_neg = (m1 > 0) & (m3 < 0) & (m1 + m3 >= 5)
+        m1_m3_below_y5 = (y5_per_month > m3_per_month) | (y5_per_month > m1)
+        m1_m3_average = (m3_per_month + m1) / 2
+        m1_m3_average[m1_m3_average < 0] = 0
+
+        m1_pos_little_m3_neg = (m1 > 0) & (m3 < 0) & (m1 < 0.05)
+        m1_pos_much_m3_neg = (m1 > 0) & (m3 < 0) & (m1 < 0.10)
 
         # temporary decline is a good signal for buying
-        new_column[m1_m3_neg & m1_m3_below_y5 & long_term_grouth] = 0.25
-        new_column[m1_pos_much_m3_neg & m1_m3_below_y5 & long_term_grouth] = 0.25
-        new_column[m1_pos_little_m3_neg & m1_m3_below_y5 & long_term_grouth] = 0.5
+        new_column[m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH - m1_m3_average
+        new_column[m1_pos_much_m3_neg & m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH * 1.5
+        new_column[m1_pos_little_m3_neg & m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH * 2
         return new_column
 
     def __call__(self, portfolio):
-        name_1m = portfolio.stat["1M"]
-        name_3m = portfolio.stat["3M"]
-        name_5y = portfolio.stat["5Y"]
-        return self.process(name_1m, name_3m, name_5y)
+        price_change_1m = portfolio.stat["1M"]
+        price_change_3m = portfolio.stat["3M"]
+        price_change_5y = portfolio.stat["5Y"]
+        return self.process(price_change_1m, price_change_3m, price_change_5y)
 
 
 class LtgRule(Rule):
-    def __init__(self, name="LtgScore", **kwargs):
+    def __init__(self, name="Long-term grouth", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def process(self, y):
-        max_y = y.max()
-        return y / max_y
+        return pd.Series(y / y.max(), index=y.index, name=self.name)
 
     def __call__(self, portfolio):
-        name_5y = portfolio.stat["5Y"]
-        return self.process(name_5y)
+        price_change_5y = portfolio.stat["5Y"]
+        return self.process(price_change_5y)
 
 
 class StgRule(LtgRule):
-    def __init__(self, name="StgScore", **kwargs):
+    def __init__(self, name="Short-term grouth", **kwargs):
         super().__init__(name=name, **kwargs)
 
     def __call__(self, portfolio):
-        name_1y = portfolio.stat["1Y"]
-        return self.process(name_1y)
+        price_change_1y = portfolio.stat["1Y"]
+        return self.process(price_change_1y)
