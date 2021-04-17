@@ -77,19 +77,17 @@ class PePsRule(Rule):
         super().__init__(name="PePsScore", **kwargs)
 
     def process(self, pe, ps):
-        new_column = pe.copy()
-        new_column.name = self.name
+        new_column = pd.Series(0, index=pe.index, name=self.name)
         new_column[(pe < 20) & (ps < 2)] = 0.5
         only_one = ((pe >= 20) & (ps < 2)) | ((pe < 20) & (ps >= 2))
         new_column[only_one] = 0.25
         new_column[(pe >= 20) & (ps >= 2)] = 0.0
         return new_column
 
-    def __call__(self, table, instruments):
-        pe = find_name(table, "P/E")
-        ps = find_name(table, "P/S")
-        new_column = self.process(table[pe], table[ps])
-        table[new_column.name] = new_column
+    def __call__(self, portfolio):
+        pe = portfolio.stat["P/E"]
+        ps = portfolio.stat["P/S"]
+        return self.process(pe, ps)
 
 
 class TerRule(Rule):
@@ -97,17 +95,15 @@ class TerRule(Rule):
         super().__init__(name="TerScore", **kwargs)
 
     def process(self, column):
-        new_column = column.copy()
-        new_column.name = self.name
+        new_column = pd.Series(0, index=column.index, name=self.name)
         new_column[column < 0.2] = 0.2
         new_column[(column >= 0.2) & (column < 0.5)] = 0.1
         new_column[column >= 0.5] = 0.0
         return new_column
 
-    def __call__(self, table, instruments):
-        column_name = find_name(table, "ter")
-        new_column = self.process(table[column_name])
-        table[new_column.name] = new_column
+    def __call__(self, portfolio):
+        data = portfolio.stat["TER"]
+        return self.process(data)
 
 
 class DeclineRule(Rule):
@@ -115,7 +111,7 @@ class DeclineRule(Rule):
         super().__init__(name="DeclineScore", **kwargs)
 
     def process(self, m1, m3, y5):
-        new_column = pd.DataFrame([0] * len(m1), columns=[self.name], index=m1.index)
+        new_column = pd.Series(0, index=m1.index, name=self.name)
 
         y5_per_month = y5.copy() / 12
         m3_per_month = m3.copy() / 3
@@ -133,12 +129,11 @@ class DeclineRule(Rule):
         new_column[m1_pos_little_m3_neg & m1_m3_below_y5 & long_term_grouth] = 0.5
         return new_column
 
-    def __call__(self, table, instruments):
-        name_1m = find_name(table, "1m")
-        name_3m = find_name(table, "3m")
-        name_5y = find_name(table, "5y")
-        new_column = self.process(table[name_1m], table[name_3m], table[name_5y])
-        table[self.name] = new_column
+    def __call__(self, portfolio):
+        name_1m = portfolio.stat["1M"]
+        name_3m = portfolio.stat["3M"]
+        name_5y = portfolio.stat["5Y"]
+        return self.process(name_1m, name_3m, name_5y)
 
 
 class LtgRule(Rule):

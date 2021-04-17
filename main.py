@@ -61,10 +61,10 @@ class Portfolio:
         self.stat = pd.DataFrame(stat_data).set_index("Symbol")
 
     def display(self, by=None):
+        stat = self.stat.copy()
+
         if by:
-            stat = self.stat.sort_values(by=by)
-        else:
-            stat = self.stat
+            stat = stat.sort_values(by=by)
 
         headers_new_name = {}
         for header in list(stat):

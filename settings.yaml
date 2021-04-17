@@ -8,8 +8,8 @@ Rules:
       strong_growing: [china, US]
       fair_growing: [FR, DE, NL, GB, KR, india, taiwan, japan, thailand, vietnam]
       fair_decline: [russia]
-  # - TerRule
-  # - PePsRule
-  # - DeclineRule
+  - TerRule
+  - PePsRule
+  - DeclineRule
   # - LtgRule
   # - StgRule
