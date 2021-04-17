@@ -99,8 +99,8 @@ if __name__ == "__main__":
     asset_scores = screener(portfolio)
 
     portfolio.stat = portfolio.stat.reindex(asset_scores.index)
-    portfolio.stat = portfolio.stat.head(10)
-    asset_scores = asset_scores.head(10)
+    # portfolio.stat = portfolio.stat.head(15)
+    # asset_scores = asset_scores.head(15)
     portfolio.display()
 
     table = tabulate(asset_scores, headers="keys", tablefmt="psql", numalign="right", stralign="right")

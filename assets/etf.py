@@ -7,7 +7,6 @@ from prisma.interfaces import (
     YahooFinanceHistoryInterface,
     FmpCountryInterface,
 )
-from prisma.wrappers import ToMillions, Percent
 from constants import (
     SECTORS_COUNTRIES_DISPLAY_NUM,
     SECTORS_COUNTRIES_MIN_WEIGHT,
