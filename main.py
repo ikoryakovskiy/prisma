@@ -8,16 +8,7 @@ import logging
 from prisma.assets import ETF
 from prisma.utils import find_name
 from prisma.interfaces.cache import Cache
-from prisma.rules import (
-    Screener,
-    SectorRule,
-    CountryRule,
-    PePsRule,
-    TerRule,
-    DeclineRule,
-    LtgRule,
-    StgRule,
-)
+from prisma.screener import Screener
 from prisma.constants import HEADER_FORMAT
 
 logging.basicConfig(level=logging.DEBUG)
@@ -110,11 +101,14 @@ if __name__ == "__main__":
 
     # instruments = convert_to_dict(instruments)
 
-    analysis_results = screener(portfolio)
-# table = table.sort_values(by="TotalScore", ascending=False)
+    asset_scores = screener(portfolio)
+    asset_scores = asset_scores.sort_values(by="TotalScore", ascending=False)
 
-# old_columns = table.columns
-# new_columns = [name.replace("Score", "S") for name in old_columns]
-# table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
+    # old_columns = table.columns
+    # new_columns = [name.replace("Score", "S") for name in old_columns]
+    # table.rename(columns=dict(zip(old_columns, new_columns)), inplace=True)
 
-# print(table.to_string(index=False))  # , float_format="%.2f"))
+    table = tabulate(asset_scores, headers="keys", tablefmt="psql", numalign="right", stralign="right")
+    print(table)
+
+    # print(table.to_string(index=False))  # , float_format="%.2f"))

@@ -4,7 +4,7 @@ from prisma.utils import convert_countries_to_codes, find_name
 
 
 class Rule:
-    def __init__(self, name):
+    def __init__(self, name=""):
         self.name = name
 
 
@@ -61,17 +61,20 @@ class SectorRule(TextBasedRule):
 
 class CountryRule(TextBasedRule):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.name = "CountryScore"
+        super().__init__(name="CountryScore", **kwargs)
         self.strong_growing = convert_countries_to_codes(self.strong_growing)
         self.fair_growing = convert_countries_to_codes(self.fair_growing)
         self.fair_decline = convert_countries_to_codes(self.fair_decline)
         self.strong_decline = convert_countries_to_codes(self.strong_decline)
 
+    def __call__(self, portfolio):
+        symbols = portfolio.stat.index
+        return self.calculate_scores(symbols, portfolio.countries)
 
-class PePsRule:
-    def __init__(self):
-        self.name = "PePsScore"
+
+class PePsRule(Rule):
+    def __init__(self, **kwargs):
+        super().__init__(name="PePsScore", **kwargs)
 
     def process(self, pe, ps):
         new_column = pe.copy()
@@ -89,9 +92,9 @@ class PePsRule:
         table[new_column.name] = new_column
 
 
-class TerRule:
-    def __init__(self):
-        self.name = "TerScore"
+class TerRule(Rule):
+    def __init__(self, **kwargs):
+        super().__init__(name="TerScore", **kwargs)
 
     def process(self, column):
         new_column = column.copy()
@@ -107,9 +110,9 @@ class TerRule:
         table[new_column.name] = new_column
 
 
-class DeclineRule:
-    def __init__(self):
-        self.name = "DeclineScore"
+class DeclineRule(Rule):
+    def __init__(self, **kwargs):
+        super().__init__(name="DeclineScore", **kwargs)
 
     def process(self, m1, m3, y5):
         new_column = pd.DataFrame([0] * len(m1), columns=[self.name], index=m1.index)
@@ -138,9 +141,9 @@ class DeclineRule:
         table[self.name] = new_column
 
 
-class LtgRule:
-    def __init__(self):
-        self.name = "LtgScore"
+class LtgRule(Rule):
+    def __init__(self, **kwargs):
+        super().__init__(name="LtgScore", **kwargs)
 
     def process(self, y):
         max_y = y.max()
@@ -153,8 +156,8 @@ class LtgRule:
 
 
 class StgRule(LtgRule):
-    def __init__(self):
-        self.name = "StgScore"
+    def __init__(self, **kwargs):
+        super().__init__(name="StgScore", **kwargs)
 
     def __call__(self, table, instruments):
         name_1y = find_name(table, "1y")
