@@ -51,8 +51,8 @@ class TextBasedRule(Rule):
 
 
 class SectorRule(TextBasedRule):
-    def __init__(self, **kwargs):
-        super().__init__(name="SectorScore", **kwargs)
+    def __init__(self, name="SectorScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
     def __call__(self, portfolio):
         symbols = portfolio.stat.index
@@ -60,8 +60,8 @@ class SectorRule(TextBasedRule):
 
 
 class CountryRule(TextBasedRule):
-    def __init__(self, **kwargs):
-        super().__init__(name="CountryScore", **kwargs)
+    def __init__(self, name="CountryScore", **kwargs):
+        super().__init__(name=name, **kwargs)
         self.strong_growing = convert_countries_to_codes(self.strong_growing)
         self.fair_growing = convert_countries_to_codes(self.fair_growing)
         self.fair_decline = convert_countries_to_codes(self.fair_decline)
@@ -73,8 +73,8 @@ class CountryRule(TextBasedRule):
 
 
 class PePsRule(Rule):
-    def __init__(self, **kwargs):
-        super().__init__(name="PePsScore", **kwargs)
+    def __init__(self, name="PePsScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
     def process(self, pe, ps):
         new_column = pd.Series(0, index=pe.index, name=self.name)
@@ -91,8 +91,8 @@ class PePsRule(Rule):
 
 
 class TerRule(Rule):
-    def __init__(self, **kwargs):
-        super().__init__(name="TerScore", **kwargs)
+    def __init__(self, name="TerScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
     def process(self, column):
         new_column = pd.Series(0, index=column.index, name=self.name)
@@ -107,8 +107,8 @@ class TerRule(Rule):
 
 
 class DeclineRule(Rule):
-    def __init__(self, **kwargs):
-        super().__init__(name="DeclineScore", **kwargs)
+    def __init__(self, name="DeclineScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
     def process(self, m1, m3, y5):
         new_column = pd.Series(0, index=m1.index, name=self.name)
@@ -137,24 +137,22 @@ class DeclineRule(Rule):
 
 
 class LtgRule(Rule):
-    def __init__(self, **kwargs):
-        super().__init__(name="LtgScore", **kwargs)
+    def __init__(self, name="LtgScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
     def process(self, y):
         max_y = y.max()
         return y / max_y
 
-    def __call__(self, table, instruments):
-        name_5y = find_name(table, "5y")
-        new_column = self.process(table[name_5y])
-        table[self.name] = new_column
+    def __call__(self, portfolio):
+        name_5y = portfolio.stat["5Y"]
+        return self.process(name_5y)
 
 
 class StgRule(LtgRule):
-    def __init__(self, **kwargs):
-        super().__init__(name="StgScore", **kwargs)
+    def __init__(self, name="StgScore", **kwargs):
+        super().__init__(name=name, **kwargs)
 
-    def __call__(self, table, instruments):
-        name_1y = find_name(table, "1y")
-        new_column = self.process(table[name_1y])
-        table[self.name] = new_column
+    def __call__(self, portfolio):
+        name_1y = portfolio.stat["1Y"]
+        return self.process(name_1y)

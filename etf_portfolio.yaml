@@ -4,22 +4,22 @@ ETF:
   - SOXX:
       industries: {"Semi": 1}
   - VBR
-  # - IVV
-  # - VTV
-  # - IWN
-  # - RSP
-  # - VFH
-  # - DEM
-  # - KBE
-  # - KRE
-  # - VWO
-  # - CHIQ
-  # - THD
-  # - VNM
-  # - XME
-  # - VAW
-  # - DIA
-  # - CQQQ
+  - IVV
+  - VTV
+  - IWN
+  - RSP
+  - VFH
+  - DEM
+  - KBE
+  - KRE
+  - VWO
+  - CHIQ
+  - THD
+  - VNM
+  - XME
+  - VAW
+  - DIA
+  - CQQQ
   # - DBC:
   #     industries: {"Comod": 1}
   # # - EXSA

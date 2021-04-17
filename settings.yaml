@@ -11,5 +11,5 @@ Rules:
   - TerRule
   - PePsRule
   - DeclineRule
-  # - LtgRule
-  # - StgRule
+  - LtgRule
+  - StgRule
