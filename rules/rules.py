@@ -79,11 +79,12 @@ class PePsRule(Rule):
         super().__init__(name=name, **kwargs)
 
     def process_single(self, x, threshold):
-        x_score = pd.Series(0, index=x.index, name=x.name)
-        norm_x = x.copy().fillna(threshold) / threshold
-        idx = norm_x < 1
-        x_score[idx] = 1 - norm_x[idx]
-        return x_score
+        # x_score = pd.Series(0, index=x.index, name=x.name)
+        # norm_x = x.copy().fillna(threshold) / threshold
+        # idx = norm_x < 1
+        # x_score[idx] = 1 - norm_x[idx]
+        # return x_score
+        return 1 - x / threshold
 
     def process(self, pe, ps):
         PE_THRESHOLD = 20.0
@@ -92,6 +93,8 @@ class PePsRule(Rule):
         pe_score = self.process_single(pe, PE_THRESHOLD)
         ps_score = self.process_single(ps, PS_THRESHOLD)
 
+        pe_score = pe_score.fillna(ps_score)
+        ps_score = ps_score.fillna(pe_score)
         mean_score = (pe_score + ps_score) / 2.0
         mean_score.name = self.name
         return mean_score

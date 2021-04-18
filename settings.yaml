@@ -1,8 +1,8 @@
 Rules:
   - SectorRule:
       strong_growing: [F, I, Semi]
-      fair_growing: [CS, EV, H, CD, Comod]
-      fair_decline: [M, E, R, T]
+      fair_growing: [CS, EV, H, CD, Comod, E]
+      fair_decline: [M, R, T]
       strong_decline: []
       weight: 2.0
   - CountryRule: # TODO: rename to RegionRule. Currently cannot use EU
@@ -13,10 +13,10 @@ Rules:
   - TerRule:
       weight: 0.1
   - PePsRule:
-      weight: 4.0
+      weight: 1.0
   - DeclineRule:
       weight: 1
   - LtgRule:
-      weight: 0.5
+      weight: 0.8
   - StgRule:
       weight: 1

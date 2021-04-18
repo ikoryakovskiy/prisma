@@ -22,10 +22,12 @@ ETF:
   - CQQQ
   - DBC:
       industries: {"Comod": 1}
-  # - EXSA
-  # - EXV1
-  # - SX7PEX
-  # - XDEV
+  - EXSA.DE
+  - EXV1.DE
+  - SX7PEX.SW
+  - XDEV.DE
+  - DXET.DE
+  - ISF.L
   - ARKW
   - ARKG
   - ICLN
