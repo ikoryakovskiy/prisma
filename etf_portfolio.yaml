@@ -2,7 +2,7 @@ ETF:
   - LIT:
       industries: {EV: 1}
   - SOXX:
-      industries: {"Semi": 1}
+      industries: {Semi: 1}
   - VBR
   - IVV
   - VTV

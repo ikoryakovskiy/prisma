@@ -4,8 +4,9 @@ from prisma.utils import convert_countries_to_codes, find_name
 
 
 class Rule:
-    def __init__(self, name=""):
+    def __init__(self, name="", weight=1.0):
         self.name = name
+        self.weight = weight
 
 
 class TextBasedRule(Rule):
@@ -28,10 +29,11 @@ class TextBasedRule(Rule):
         score = 0
         for categoty in data:
             if categoty in prediction:
-                if isinstance(data, dict):
-                    score += data[categoty]
-                else:
-                    score += 1.0 / len(data)
+                score += data[categoty]
+                # if isinstance(data, dict):
+                #     score += data[categoty]
+                # else:
+                #     score += 1.0 / len(data)
         return multiplier * score
 
     def evaluate(self, data):
@@ -56,7 +58,7 @@ class SectorRule(TextBasedRule):
 
     def __call__(self, portfolio):
         symbols = portfolio.stat.index
-        return self.calculate_scores(symbols, portfolio.sectors)
+        return self.calculate_scores(symbols, portfolio.sectors) * self.weight
 
 
 class CountryRule(TextBasedRule):
@@ -69,29 +71,35 @@ class CountryRule(TextBasedRule):
 
     def __call__(self, portfolio):
         symbols = portfolio.stat.index
-        return self.calculate_scores(symbols, portfolio.countries)
+        return self.calculate_scores(symbols, portfolio.countries) * self.weight
 
 
 class PePsRule(Rule):
     def __init__(self, name="P/E P/S", **kwargs):
         super().__init__(name=name, **kwargs)
 
-    def process(self, pe, ps):
-        PE_THRESHOLD = 20
-        PS_THRESHOLD = 2
-        temp_pe = pe.copy().fillna(PE_THRESHOLD)
-        temp_ps = ps.copy().fillna(PS_THRESHOLD)
+    def process_single(self, x, threshold):
+        x_score = pd.Series(0, index=x.index, name=x.name)
+        norm_x = x.copy().fillna(threshold) / threshold
+        idx = norm_x < 1
+        x_score[idx] = 1 - norm_x[idx]
+        return x_score
 
-        new_column = pd.Series(0, index=pe.index, name=self.name)
-        new_column[(temp_pe < 20) & (temp_ps < 2)] = 0.5
-        only_one = ((temp_pe >= 20) & (temp_ps < 2)) | ((temp_pe < 20) & (temp_ps >= 2))
-        new_column[only_one] = 0.25
-        return new_column
+    def process(self, pe, ps):
+        PE_THRESHOLD = 20.0
+        PS_THRESHOLD = 2.0
+
+        pe_score = self.process_single(pe, PE_THRESHOLD)
+        ps_score = self.process_single(ps, PS_THRESHOLD)
+
+        mean_score = (pe_score + ps_score) / 2.0
+        mean_score.name = self.name
+        return mean_score
 
     def __call__(self, portfolio):
         pe = portfolio.stat["P/E"]
         ps = portfolio.stat["P/S"]
-        return self.process(pe, ps)
+        return self.process(pe, ps) * self.weight
 
 
 class TerRule(Rule):
@@ -100,10 +108,13 @@ class TerRule(Rule):
 
     def process(self, column):
         new_column = pd.Series(0, index=column.index, name=self.name)
-        new_column[column < 0.002] = 0.2
-        new_column[(column >= 0.002) & (column < 0.005)] = 0.1
-        new_column[column >= 0.005] = 0.0
-        return new_column
+        # new_column[column < 0.002] = 0.2
+        # new_column[(column >= 0.002) & (column < 0.005)] = 0.1
+        # new_column[column >= 0.005] = 0.0
+        # return new_column
+        idx = column < 0.01
+        new_column[idx] = 0.01 - column[idx]
+        return new_column * 100 * self.weight
 
     def __call__(self, portfolio):
         data = portfolio.stat["TER"]
@@ -115,12 +126,15 @@ class DeclineRule(Rule):
         super().__init__(name=name, **kwargs)
 
     def process(self, m1, m3, y5):
+        MINIMUM_EXPECTED_YEARLY_GROUTH = 0.15  # in %
+        LARGE_REBOUND_MULTIPLIER = 1.5
+        SMALL_REBOUND_MULTIPLIER = 2.0
+
         new_column = pd.Series(0, index=m1.index, name=self.name)
 
         y5_per_month = y5.copy() / 12
         m3_per_month = m3.copy() / 3
 
-        MINIMUM_EXPECTED_YEARLY_GROUTH = 0.15  # in %
         long_term_grouth = y5 > MINIMUM_EXPECTED_YEARLY_GROUTH
 
         m1_m3_below_y5 = (y5_per_month > m3_per_month) | (y5_per_month > m1)
@@ -132,15 +146,19 @@ class DeclineRule(Rule):
 
         # temporary decline is a good signal for buying
         new_column[m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH - m1_m3_average
-        new_column[m1_pos_much_m3_neg & m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH * 1.5
-        new_column[m1_pos_little_m3_neg & m1_m3_below_y5 & long_term_grouth] = MINIMUM_EXPECTED_YEARLY_GROUTH * 2
-        return new_column
+        new_column[m1_pos_much_m3_neg & m1_m3_below_y5 & long_term_grouth] = (
+            MINIMUM_EXPECTED_YEARLY_GROUTH * LARGE_REBOUND_MULTIPLIER
+        )
+        new_column[m1_pos_little_m3_neg & m1_m3_below_y5 & long_term_grouth] = (
+            MINIMUM_EXPECTED_YEARLY_GROUTH * SMALL_REBOUND_MULTIPLIER
+        )
+        return new_column / (MINIMUM_EXPECTED_YEARLY_GROUTH * SMALL_REBOUND_MULTIPLIER)
 
     def __call__(self, portfolio):
         price_change_1m = portfolio.stat["1M"]
         price_change_3m = portfolio.stat["3M"]
         price_change_5y = portfolio.stat["5Y"]
-        return self.process(price_change_1m, price_change_3m, price_change_5y)
+        return self.process(price_change_1m, price_change_3m, price_change_5y) * self.weight
 
 
 class LtgRule(Rule):
@@ -152,7 +170,7 @@ class LtgRule(Rule):
 
     def __call__(self, portfolio):
         price_change_5y = portfolio.stat["5Y"]
-        return self.process(price_change_5y)
+        return self.process(price_change_5y) * self.weight
 
 
 class StgRule(LtgRule):
@@ -161,4 +179,4 @@ class StgRule(LtgRule):
 
     def __call__(self, portfolio):
         price_change_1y = portfolio.stat["1Y"]
-        return self.process(price_change_1y)
+        return self.process(price_change_1y) * self.weight
