@@ -1,68 +1,109 @@
 ETF:
-  - LIT:
-      industries: {EV: 1}
-  - SOXX:
-      industries: {Semi: 1}
-  - VBR
-  - IVV
+
+# S&P 500
+  - IVV  # S&P 500
+  - RSP  # 7s report: Equal weight S&P 500
+
+# Broad value
   - VTV
-  - IWN
-  - RSP
-  - VFH
-  - DEM
-  - KBE
-  - KRE
-  - VWO
-  - CHIQ
-  - THD
-  - VNM
-  - XME
-  - VAW
+  - VWO # EM
   - DIA
-  - CQQQ
+
+# Financial
+  - KBE  # 7s report: F
+  - KRE  # 7s report: F
+  - IYG  # 7s report: F
+  - VFH
+
+# Consumer discretary
+  - RCD  # 7s report: CD, equal weight (smaller TSLA, AMZN compared to XLY &  VCR)
+  - FXG  # 7s report: CS, near equal weight (smaller TSLA, AMZN compared to XLY &  VCR)
+  - VCR  # CD
+  - XLY  # CD
+  - IBUY # CD
+  - CHIQ # Tinkoff: CD, China
+
+# Small-Cap
+  - IJR  # 7s report: Small-Cap, good for recovery
+  - IWN  # Similar to IJR (40% ObW)
+  - VBR  # Similar to IJR (18% ObW), ObW with IWN is 35%
+
+# Materials & Infrastructure
+  - VAW
+  - XME
+  - PAVE # Infrastructure
+
+# Innovative technology
+  - LIT: # Electric vehicles
+      industries: {EV: 1}
+  - SOXX: # Semiconductor
+      industries: {Semi: 1}
+  - SMH: # Similar to SOXX, but lower fees
+      industries: {Semi: 1}
+  - FFTY # Innovator IBD 50
+  - BOUT # Innovator IBD Breakout Opportunities
+  - ARKK # More speculative (TSLA 11%) then FFTY, BOUT 
+  - ARKW # Web (TSLA 11%)
+  - ARKG # Genomics
+
+# Regular technology
+  - IGV # Expanded Tech-Software: A lot of tech companies, not good currently
+  - CQQQ # Tinkoff: CD, China
+
+# Broad emerging markets
+  - THD  # Tinkoff: Thailand
+  - VNM  # Tinkoff: Vietnam
+
+# High-Yield
+  - DEM
+
+# Comodities
   - DBC:
       industries: {"Comod": 1}
-  - EXSA.DE
-  - EXV1.DE
-  - SX7PEX.SW
-  - XDEV.DE
-  - DXET.DE
-  - ISF.L
-  - ARKW
-  - ARKG
-  - ICLN
-  - BOTZ
-  - FINX
-  - PALL
-#   - JETS
-  - PRNT
-  - GLTR
-  - IBUY
-  - EWA
-  - XLY
-  - VPU
-  - VNQ
-  - IAU
-  - SLV
-  - HERO
-  - INDA
-  - ROBO
-  # - EDOC
-  - SKYY
-  - SNSR
-  # - VCLT
-  # - IMEU
-  - SPLV
-  - IBB
-  - GREK
-  - SQQQ
-  # - LQD
-  # - IHYG
-  - EMB
-  - VHT
-  - JNK
-  - SHYG
-  - FLOT
-  - TLT
-  - CIBR
-  - EWZ
+#   - EXSA.DE
+#   - EXV1.DE
+#   - SX7PEX.SW
+#   - XDEV.DE
+#   - DXET.DE
+#   - ISF.L
+#   - ARKK
+#   - ARKW
+#   - ARKG
+#   - ICLN
+#   - BOTZ
+#   - FINX
+#   - PALL
+# #   - JETS
+#   - PRNT
+#   - GLTR
+#   - IBUY
+#   - EWA
+#   - VPU
+#   - VNQ
+#   - IAU
+#   - SLV
+#   - HERO
+#   - INDA
+#   - ROBO
+#   # - EDOC
+#   - SKYY
+#   - SNSR
+#   # - VCLT
+#   # - IMEU
+#   - SPLV
+#   - IBB
+#   - GREK
+#   - SQQQ
+#   # - LQD
+#   # - IHYG
+#   - EMB
+#   - VHT
+#   - JNK
+#   - SHYG
+#   - FLOT
+#   - TLT
+#   - CIBR
+#   - EWZ
+#   - BLOK
+# 
+  

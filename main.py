@@ -85,9 +85,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("assets", help="A protfolio file with assets to open")
     parser.add_argument(
-        "--allow-outdated", action="store_true", default=False, help="Allow using outdated asset records"
+        "-o", "--allow-outdated", action="store_true", default=False, help="Allow using outdated asset records"
     )
-    parser.add_argument("--clean-cache", action="store_true", default=False, help="Remove all outdated records")
+    parser.add_argument("-c", "--clean-cache", action="store_true", default=False, help="Remove all outdated records")
     args = parser.parse_args()
 
     if args.clean_cache:

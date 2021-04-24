@@ -1,22 +1,23 @@
 Rules:
   - SectorRule:
-      strong_growing: [F, I, Semi]
-      fair_growing: [CS, EV, H, CD, Comod, E]
-      fair_decline: [M, R, T]
+      strong_growing: [F, CD, Semi]
+      fair_growing: [CS, H, M, I, E, EV, Comod]
+      neutral: [R, U] # Defensive
+      fair_decline: [T]
       strong_decline: []
-      weight: 2.0
+      weight: 1.5
   - CountryRule: # TODO: rename to RegionRule. Currently cannot use EU
       strong_growing: [china, HK, US]
       fair_growing: [FR, DE, NL, GB, KR, india, taiwan, japan, thailand, vietnam, greece]
-      fair_decline: [russia]
-      weight: 1
+      neutral: [russia]
+      weight: 0.5
   - TerRule:
       weight: 0.1
   - PePsRule:
-      weight: 1.0
+      weight: 1
   - DeclineRule:
       weight: 1
   - LtgRule:
-      weight: 0.8
+      weight: 0.5
   - StgRule:
       weight: 1

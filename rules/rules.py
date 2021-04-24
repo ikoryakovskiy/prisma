@@ -14,6 +14,7 @@ class TextBasedRule(Rule):
         self,
         strong_growing=None,
         fair_growing=None,
+        neutral=None,
         fair_decline=None,
         strong_decline=None,
         **kwargs,
