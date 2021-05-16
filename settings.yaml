@@ -1,10 +1,12 @@
 Rules:
   - SectorRule:
-      strong_growing: [F, CD, Semi]
-      fair_growing: [CS, H, M, I, E, EV, Comod]
-      neutral: [R, U] # Defensive
-      fair_decline: [T]
-      strong_decline: []
+      # Rising yields
+      # https://am.jpmorgan.com/lu/en/asset-management/per/insights/market-insights/on-the-minds-of-investors/growth-and-inflation-heating-up/
+      strong_growing: [F, I]
+      fair_growing: [E, M, Semi, Comod, EV]
+      neutral: []
+      fair_decline: [CD, H]
+      strong_decline: [CS, R, U, C, T]
       weight: 1.5
   - CountryRule: # TODO: rename to RegionRule. Currently cannot use EU
       strong_growing: [china, HK, US]

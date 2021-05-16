@@ -1,5 +1,11 @@
 ETF:
 
+# Anal results:
+#     * SMH better then SOXX
+#     * IJR can be better then IWN
+#     * KBE can be better then KRE
+#     * PAVE & VAW are attractive 
+
 # S&P 500
   - IVV  # S&P 500
   - RSP  # 7s report: Equal weight S&P 500
@@ -8,6 +14,7 @@ ETF:
   - VTV
   - VWO # EM
   - DIA
+  - FDVV # Found myself, looks like a good value ETF + High Dividends, low fee
 
 # Financial
   - KBE  # 7s report: F
@@ -24,21 +31,27 @@ ETF:
   - CHIQ # Tinkoff: CD, China
 
 # Small-Cap
-  - IJR  # 7s report: Small-Cap, good for recovery
+  - IJR  # 7s report: Small-Cap, good for recovery, very small fee!
   - IWN  # Similar to IJR (40% ObW)
   - VBR  # Similar to IJR (18% ObW), ObW with IWN is 35%
 
-# Materials & Infrastructure
-  - VAW
-  - XME
-  - PAVE # Infrastructure
+# Infrastructure
+  - PAVE
+
+# Green Energy
+  - ICLN
+  - TAN
+  - PBW
+  - QCLN
 
 # Innovative technology
   - LIT: # Electric vehicles
       industries: {EV: 1}
-  - SOXX: # Semiconductor
+  -  BATT: # Electric vehicles
+      industries: {EV: 1}
+  - SOXX: # Semiconductor, US
       industries: {Semi: 1}
-  - SMH: # Similar to SOXX, but lower fees
+  - SMH: # Similar to SOXX, but lower fees and includes other countries (e.g. Taiwan)
       industries: {Semi: 1}
   - FFTY # Innovator IBD 50
   - BOUT # Innovator IBD Breakout Opportunities
@@ -46,9 +59,16 @@ ETF:
   - ARKW # Web (TSLA 11%)
   - ARKG # Genomics
 
+# ING
+  - XDEV.DE
+  - IWDA.AS
+  - IMAE.AS
+  - IUKD.L
+
 # Regular technology
   - IGV # Expanded Tech-Software: A lot of tech companies, not good currently
   - CQQQ # Tinkoff: CD, China
+  - FQAL # Found myself, looks like a good growth ETF, low fee
 
 # Broad emerging markets
   - THD  # Tinkoff: Thailand
@@ -57,53 +77,72 @@ ETF:
 # High-Yield
   - DEM
 
+# Natual resources
+# From an exposure standpoint, GUNR and GNR have very similar exposures, dominated by large-cap diversified
+# energy names (Exxon/Chevron) and larger industrial miner (Anglo American, Vale, etc.). Case inpoint, their
+# performance is nearly identical as GUNR is up 21.9% and  GNR is up 22.7% YTD. 
+  - GNR   # 7s report: energy, mining
+  - GUNR  # 7s report: energy, mining
+  - GDX   # 7s report: gold exposure
+  - XLE   # 7s report: to add medium and small cap energy exposure
+  - XME   # metals and mining segment
+  - PICK  # metals and mining segment, by far the most diverse, developed countries
+  - EMT   # metals and mining segment, EM
+  - VAW   # made up of stocks of large, mid-size, and small U.S. companies within the materials sector
+
 # Comodities
   - DBC:
-      industries: {"Comod": 1}
-#   - EXSA.DE
-#   - EXV1.DE
-#   - SX7PEX.SW
-#   - XDEV.DE
-#   - DXET.DE
-#   - ISF.L
-#   - ARKK
-#   - ARKW
-#   - ARKG
-#   - ICLN
-#   - BOTZ
-#   - FINX
-#   - PALL
-# #   - JETS
-#   - PRNT
-#   - GLTR
-#   - IBUY
-#   - EWA
-#   - VPU
-#   - VNQ
-#   - IAU
-#   - SLV
-#   - HERO
-#   - INDA
-#   - ROBO
-#   # - EDOC
-#   - SKYY
-#   - SNSR
-#   # - VCLT
-#   # - IMEU
-#   - SPLV
-#   - IBB
-#   - GREK
-#   - SQQQ
-#   # - LQD
-#   # - IHYG
-#   - EMB
-#   - VHT
-#   - JNK
-#   - SHYG
-#   - FLOT
-#   - TLT
-#   - CIBR
-#   - EWZ
-#   - BLOK
-# 
-  
+      industries: {"Comod": 1}  # 7s report 
+  - PDBC:
+      industries: {"Comod": 1}  # 7s report
+  - CMDY:
+      industries: {"Comod": 1}  # 7s report 
+
+# Unsorted
+  - BOTZ
+  - FINX
+  - PALL
+  - PRNT
+  - GLTR
+  - EWA
+  - VPU
+  - VNQ
+  - IAU
+  - SLV
+  - HERO
+  - INDA
+  - ROBO
+  - SKYY
+  - SNSR
+  - SPLV
+  - IBB
+  - GREK
+  - SQQQ
+  - EMB
+  - VHT
+  - JNK
+  - SHYG
+  - FLOT
+  - TLT
+  - CIBR
+  - EWZ
+  - BLOK
+
+# Aristocrats
+  - TDV
+  - NOBL
+
+
+  # - JETS
+  # - EDOC
+  # - VCLT
+  # - IMEU
+  # - LQD
+  # - IHYG
+
+  # - EXSA.DE
+  # - EXV1.DE
+  # - SX7PEX.SW
+  # - XDEV.DE
+  # - DXET.DE
+  # - ISF.L
