@@ -68,7 +68,7 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         stat = OrderedDict()
         stat["Symbol"] = symbol
         shortName = response["quoteType"]["shortName"]
-        longName = response["quoteType"]["longName"]  # sometimes, long name is shorter :)
+        longName = response["quoteType"].get("longName", shortName)  # sometimes, long name is shorter :)
         stat["Name"] = shortName if len(shortName) < len(longName) else longName
         stat["P/E"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"])
         stat["P/S"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"])

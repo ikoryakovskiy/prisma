@@ -27,7 +27,7 @@ class Asset:
     def get_history_span(self):
         end_date = date.today()
         half_window = WINDOW_MULTIPLIER * STD_DAYS_5Y
-        start_date = end_date - relativedelta(years=5) - relativedelta(days=half_window)
+        start_date = end_date - relativedelta(years=5) - relativedelta(days=half_window) - relativedelta(days=7)
         return start_date, end_date
 
     def append(self, lhs, rhs):
@@ -55,8 +55,8 @@ class Asset:
     def filter_price(self, price):
         back_5y = date.today() - relativedelta(years=5)
         back_1y = date.today() - relativedelta(years=1)
-        back_3m = date.today() - relativedelta(month=3)
-        back_1m = date.today() - relativedelta(month=1)
+        back_3m = date.today() - relativedelta(months=3)
+        back_1m = date.today() - relativedelta(months=1)
         today = date.today()
 
         dates = [back_1m, back_3m, back_1y, back_5y]

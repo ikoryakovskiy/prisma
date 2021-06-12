@@ -65,8 +65,8 @@ SECTORS_COUNTRIES_DISPLAY_NUM = 3  # In counts
 SECTORS_COUNTRIES_MIN_WEIGHT = 0.1  # In %
 
 # Standard deviation for filtering at specific time back (in days)
-WINDOW_MULTIPLIER = 3
-STD_DAYS_5Y = 60  # 12 month window
-STD_DAYS_1Y = 12  # 2.4 month window
-STD_DAYS_3M = 3  # 18 days window
-STD_DAYS_1M = 1  # 6 days window
+WINDOW_MULTIPLIER = 1
+STD_DAYS_5Y = 60  # 121 * WINDOW_MULTIPLIER days window
+STD_DAYS_1Y = 12  # 25 * WINDOW_MULTIPLIER days window
+STD_DAYS_3M = 3  # 7 * WINDOW_MULTIPLIER days window
+STD_DAYS_1M = 1  # 3 * WINDOW_MULTIPLIER days window

@@ -20,17 +20,21 @@ class ConvDateSeries:
             filter = Gaussian(0, std)  # will calculate in days
 
         half_window = WINDOW_MULTIPLIER * std
-        start_date = mean - relativedelta(days=half_window)
-        end_date = mean + relativedelta(days=half_window)
 
-        windowed_x = x[(x.index >= str(start_date)) & (x.index <= str(end_date))]
+        # Shift backwards by offset days if no bussiness days were found in that time frame
+        for offset in range(8):
+            start_date = mean - relativedelta(days=half_window) - relativedelta(days=offset)
+            end_date = mean + relativedelta(days=half_window) - relativedelta(days=offset)
 
-        norm = 0
-        filtered_x = 0
-        for day, value in windowed_x.iteritems():
-            days_to_mean = (datetime.strptime(day, "%Y-%m-%d").date() - mean).days
-            weight = filter(days_to_mean)
-            filtered_x += value * weight
-            norm += weight
-        if norm > 0:
-            return filtered_x / norm
+            windowed_x = x[(x.index >= str(start_date)) & (x.index <= str(end_date))]
+
+            norm = 0
+            filtered_x = 0
+            for day, value in windowed_x.iteritems():
+                days_to_mean = (datetime.strptime(day, "%Y-%m-%d").date() - mean).days
+                weight = filter(days_to_mean)
+                filtered_x += value * weight
+                norm += weight
+            if norm > 0:
+                return filtered_x / norm
+        raise ValueError("Something is wrong because even after shifting by 7 days backwards, no valid price found")
