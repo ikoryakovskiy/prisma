@@ -37,4 +37,4 @@ class ConvDateSeries:
                 norm += weight
             if norm > 0:
                 return filtered_x / norm
-        raise ValueError("Something is wrong because even after shifting by 7 days backwards, no valid price found")
+        return float("nan")
