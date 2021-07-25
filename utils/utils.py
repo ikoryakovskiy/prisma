@@ -47,3 +47,11 @@ def percent_to_float(x):
 
 def none_if_zero(x):
     return x if x != 0 else None
+
+
+def read_dict(data, names, none_to_zero=True):
+    if not names:
+        return none_if_zero(data) if none_to_zero else data
+    if names[0] in data:
+        return read_dict(data[names[0]], names[1:], none_to_zero=none_to_zero)
+    return 0 if none_to_zero else None

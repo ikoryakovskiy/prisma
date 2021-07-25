@@ -10,7 +10,7 @@ import logging
 
 from prisma.interfaces.cache import Cache
 from prisma.interfaces.wallet import Wallet
-from prisma.utils import convert_countries_to_codes, percent_to_float, none_if_zero
+from prisma.utils import convert_countries_to_codes, percent_to_float, none_if_zero, read_dict
 from prisma.constants import WALLET_FILE, RAPIDAPI_SECTORS_MAP
 
 
@@ -67,30 +67,28 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         # Single-number statistics
         stat = OrderedDict()
         stat["Symbol"] = symbol
-        shortName = response["quoteType"]["shortName"]
-        longName = response["quoteType"].get("longName", shortName)  # sometimes, long name is shorter :)
+        shortName = read_dict(response, ["quoteType", "shortName"], none_to_zero=False)
+        longName = read_dict(response, ["quoteType", "longName"], none_to_zero=False) or shortName
+        # sometimes, long name is shorter :)
         stat["Name"] = shortName if len(shortName) < len(longName) else longName
-        if "equityHoldings" in response["topHoldings"]:
-            stat["P/E"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"])
-            stat["P/S"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"])
-        else:
-            stat["P/E"] = None
-            stat["P/S"] = None
-        stat["Yield"] = response["defaultKeyStatistics"]["yield"]["raw"]
-        stat["Volume"] = none_if_zero(response["price"]["averageDailyVolume3Month"]["raw"])
-        stat["TER"] = none_if_zero(
-            response["fundProfile"]["feesExpensesInvestment"]["annualReportExpenseRatio"]["raw"]
-        )
-        stat["Price"] = none_if_zero(response["price"]["regularMarketPrice"]["raw"])
-        stat["50MA"] = none_if_zero(response["summaryDetail"]["fiftyDayAverage"]["raw"])
-        stat["200MA"] = none_if_zero(response["summaryDetail"]["twoHundredDayAverage"]["raw"])
+        stat["P/E"] = read_dict(response, ["topHoldings", "equityHoldings", "priceToEarnings", "raw"])
+        stat["P/S"] = read_dict(response, ["topHoldings", "equityHoldings", "priceToSales", "raw"])
+        stat["Yield"] = read_dict(response, ["defaultKeyStatistics", "yield", "raw"])
+        stat["Volume"] = read_dict(response, ["price", "averageDailyVolume3Month", "raw"])
+        stat["TER"] = read_dict(response, ["fundProfile", "feesExpensesInvestment", "annualReportExpenseRatio", "raw"])
+
+        stat["Price"] = read_dict(response, ["price", "regularMarketPrice", "raw"])
+        stat["50MA"] = read_dict(response, ["summaryDetail", "fiftyDayAverage", "raw"])
+        stat["200MA"] = read_dict(response, ["summaryDetail", "twoHundredDayAverage", "raw"])
 
         # Sectors and percentages
+        sector_weights = read_dict(response, ["topHoldings", "sectorWeightings"])
         sectors = {}
-        for holding_info in response["topHoldings"]["sectorWeightings"]:
-            for sector in holding_info:
-                sectors[sector] = holding_info[sector]["raw"]
-        sectors = {RAPIDAPI_SECTORS_MAP[name]: weight for name, weight in sectors.items()}
+        if sector_weights:
+            for holding_info in sector_weights:
+                for sector in holding_info:
+                    sectors[sector] = holding_info[sector]["raw"]
+            sectors = {RAPIDAPI_SECTORS_MAP[name]: weight for name, weight in sectors.items()}
         return stat, sectors
 
 
