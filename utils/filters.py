@@ -31,7 +31,9 @@ class ConvDateSeries:
             norm = 0
             filtered_x = 0
             for day, value in windowed_x.iteritems():
-                days_to_mean = (datetime.strptime(day, "%Y-%m-%d").date() - mean).days
+                if isinstance(day, str):
+                    day = datetime.strptime(day, "%Y-%m-%d")
+                days_to_mean = (day.date() - mean).days
                 weight = filter(days_to_mean)
                 filtered_x += value * weight
                 norm += weight

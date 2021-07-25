@@ -2,9 +2,9 @@ import os
 import requests
 import json
 from functools import partial
+import yfinance
 from yahoofinance import HistoricalPrices
 from urllib.request import urlopen
-import pandas as pd
 from collections import OrderedDict
 import logging
 
@@ -70,8 +70,12 @@ class RapidApiStatisticsInterface(RapidApiInterface):
         shortName = response["quoteType"]["shortName"]
         longName = response["quoteType"].get("longName", shortName)  # sometimes, long name is shorter :)
         stat["Name"] = shortName if len(shortName) < len(longName) else longName
-        stat["P/E"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"])
-        stat["P/S"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"])
+        if "equityHoldings" in response["topHoldings"]:
+            stat["P/E"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToEarnings"]["raw"])
+            stat["P/S"] = none_if_zero(response["topHoldings"]["equityHoldings"]["priceToSales"]["raw"])
+        else:
+            stat["P/E"] = None
+            stat["P/S"] = None
         stat["Yield"] = response["defaultKeyStatistics"]["yield"]["raw"]
         stat["Volume"] = none_if_zero(response["price"]["averageDailyVolume3Month"]["raw"])
         stat["TER"] = none_if_zero(
@@ -103,7 +107,10 @@ class RapidApiHistoryInterface(RapidApiInterface):
 
 class YahooFinanceHistoryInterface(Interface):
     def __init__(self, **kwargs):
-        super().__init__(name="yfinance_history", **kwargs)
+        """
+        yahoofinance package stopped working as of now
+        """
+        super().__init__(name="yahoofinance_history", **kwargs)
 
     def request(self, start_date, end_date, query):
         req = HistoricalPrices(query["symbol"], start_date=start_date, end_date=end_date)
@@ -116,6 +123,26 @@ class YahooFinanceHistoryInterface(Interface):
     def pull(self, symbol, region, start_date, end_date):
         response = self.send_request(symbol, "US", start_date, end_date)
         close_price = response["Historical Prices"]["Close"]
+        return close_price
+
+
+class YFinanceHistoryInterface(Interface):
+    def __init__(self, **kwargs):
+        """
+        Alternative package that works
+        """
+        super().__init__(name="yfinance_history", **kwargs)
+
+    def request(self, start_date, end_date, query):
+        return yfinance.download(query["symbol"], start=start_date, end=end_date, progress=False)
+
+    def send_request(self, symbol, region, start_date, end_date):
+        request_fn = partial(self.request, start_date, end_date)
+        return self.get_response(self.name, symbol, region, request_fn=request_fn)
+
+    def pull(self, symbol, region, start_date, end_date):
+        response = self.send_request(symbol, "US", start_date, end_date)
+        close_price = response["Close"]
         return close_price
 
 

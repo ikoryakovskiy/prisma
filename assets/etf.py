@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from prisma.interfaces import (
     RapidApiStatisticsInterface,
-    YahooFinanceHistoryInterface,
+    YFinanceHistoryInterface,
     FmpCountryInterface,
 )
 from constants import (
@@ -85,7 +85,7 @@ class ETF(Asset):
         istat = RapidApiStatisticsInterface(allow_outdated=self.allow_outdated)
         self.stat, self.sectors = istat.pull(self.symbol, "US")
 
-        ihistory = YahooFinanceHistoryInterface(allow_outdated=self.allow_outdated)
+        ihistory = YFinanceHistoryInterface(allow_outdated=self.allow_outdated)
         start_date, end_date = self.get_history_span()
         self.price = ihistory.pull(self.symbol, "US", start_date, end_date)
 
